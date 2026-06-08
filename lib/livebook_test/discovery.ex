@@ -87,7 +87,13 @@ defmodule LivebookTest.Discovery do
       0
   """
   @spec count([String.t()], keyword()) :: non_neg_integer()
-  def count(patterns, opts \\ []) when is_list(patterns) do
+  def count(patterns, opts \\ [])
+
+  def count(patterns, opts) when is_list(patterns) do
     patterns |> find(opts) |> length()
+  end
+
+  def count(pattern, opts) when is_binary(pattern) do
+    count([pattern], opts)
   end
 end

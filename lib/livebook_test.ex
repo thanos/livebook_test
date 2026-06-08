@@ -218,7 +218,7 @@ defmodule LivebookTest do
     |> maybe_put(opts, :timeout, :timeout)
     |> maybe_put(opts, :local_deps, :local_deps)
     |> maybe_put(opts, :exclude, :exclude)
-    |> maybe_put_verbose(opts)
+    |> maybe_put(opts, :verbose, :verbose)
   end
 
   defp maybe_put(overrides, opts, source_key, dest_key) do
@@ -232,13 +232,6 @@ defmodule LivebookTest do
     case Keyword.get(opts, :mode) do
       nil -> overrides
       mode -> Keyword.put(overrides, :dependency_mode, mode)
-    end
-  end
-
-  defp maybe_put_verbose(overrides, opts) do
-    case Keyword.get(opts, :verbose) do
-      nil -> overrides
-      verbose -> Keyword.put(overrides, :verbose, verbose)
     end
   end
 end

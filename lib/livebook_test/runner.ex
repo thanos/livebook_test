@@ -152,16 +152,14 @@ defmodule LivebookTest.Runner do
   def run_all(script_pairs, opts \\ []) when is_list(script_pairs) do
     timeout = Keyword.get(opts, :timeout, 60_000)
 
-    script_pairs
-    |> Enum.map(fn {notebook_path, script_path} ->
-      run_opts =
-        opts |> Keyword.put(:timeout, timeout) |> Keyword.put(:notebook_path, notebook_path)
+    Enum.map(script_pairs, fn {notebook_path, script_path} ->
+      run_opts = Keyword.put(opts, :timeout, timeout)
+      run_opts = Keyword.put(run_opts, :notebook_path, notebook_path)
 
-      {notebook_path, run(script_path, run_opts)}
-    end)
-    |> Enum.map(fn
-      {_notebook_path, {:ok, result}} -> result
-      {notebook_path, {:error, reason}} -> error_result(reason, notebook_path)
+      case run(script_path, run_opts) do
+        {:ok, result} -> result
+        {:error, reason} -> error_result(reason, notebook_path)
+      end
     end)
   end
 

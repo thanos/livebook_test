@@ -89,15 +89,13 @@ defmodule LivebookTest.DependencyPatcher do
   end
 
   defp patch_dep_with_opts(script, dep_name, replacement) do
-    pattern =
-      Regex.compile!("\\{:(?:#{Regex.escape(dep_name)}),\\s*\"[^\"]+\",\\s*[^}]+\\}")
+    pattern = Regex.compile!("\\{:#{Regex.escape(dep_name)},\\s*\"[^\"]+\",\\s*[^}]+\\}")
 
     Regex.replace(pattern, script, replacement)
   end
 
   defp patch_simple_dep(script, dep_name, replacement) do
-    pattern =
-      Regex.compile!("\\{:(?:#{Regex.escape(dep_name)}),\\s*\"[^\"]+\"\\}")
+    pattern = Regex.compile!("\\{:#{Regex.escape(dep_name)},\\s*\"[^\"]+\"\\}")
 
     Regex.replace(pattern, script, replacement)
   end

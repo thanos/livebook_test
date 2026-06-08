@@ -81,5 +81,8 @@ jobs:
       - name: Install dependencies
         run: mix deps.get
 
-      - name: Run Livebook tests
+      - name: Run Livebook tests (remote)
         run: mix livebook.test --mode remote
+
+      - name: Run Livebook tests (local)
+        run: mix livebook.test --mode local

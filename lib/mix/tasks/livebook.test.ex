@@ -28,6 +28,7 @@ defmodule Mix.Tasks.Livebook.Test do
 
     - `0` — all notebooks passed
     - `1` — one or more notebooks failed
+    - `2` — no notebooks discovered
 
   ## CI/CD integration
 
@@ -60,7 +61,16 @@ defmodule Mix.Tasks.Livebook.Test do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _args, _errors} = OptionParser.parse(args, switches: @switches)
+    {opts, _args, errors} = OptionParser.parse(args, switches: @switches)
+
+    if errors != [] do
+      errors
+      |> Enum.each(fn {key, value} ->
+        Mix.shell().error("Unknown option: #{key} #{inspect(value)}")
+      end)
+
+      Mix.raise("Invalid options provided. Run \"mix help livebook.test\" for usage information")
+    end
 
     Mix.Task.run("app.start", [])
 
@@ -118,14 +128,29 @@ defmodule Mix.Tasks.Livebook.Test do
       nil -> overrides
       "local" -> Keyword.put(overrides, :dependency_mode, :local)
       "remote" -> Keyword.put(overrides, :dependency_mode, :remote)
-      mode -> Keyword.put(overrides, :dependency_mode, String.to_atom(mode))
+      mode when is_atom(mode) -> Keyword.put(overrides, :dependency_mode, mode)
+      other -> Mix.raise("Invalid --mode value: #{inspect(other)}. Expected: local or remote")
     end
   end
 
   defp put_timeout(overrides, opts) do
     case Keyword.get(opts, :timeout) do
-      nil -> overrides
-      timeout -> Keyword.put(overrides, :timeout, String.to_integer(timeout) * 1000)
+      nil ->
+        overrides
+
+      timeout when is_binary(timeout) ->
+        case Integer.parse(timeout) do
+          {value, ""} ->
+            Keyword.put(overrides, :timeout, value * 1000)
+
+          _ ->
+            Mix.raise(
+              "Invalid --timeout value: #{inspect(timeout)}. Expected a number in seconds"
+            )
+        end
+
+      timeout when is_integer(timeout) ->
+        Keyword.put(overrides, :timeout, timeout)
     end
   end
 

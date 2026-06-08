@@ -47,6 +47,18 @@ defmodule Mix.Tasks.Livebook.TestTest do
       assert config.timeout == 60_000
     end
 
+    test "raises on invalid timeout value" do
+      assert_raise Mix.Error, ~r/Invalid --timeout/, fn ->
+        LivebookTestTask.build_config_from_opts(timeout: "abc")
+      end
+    end
+
+    test "raises on invalid mode value" do
+      assert_raise Mix.Error, ~r/Invalid --mode/, fn ->
+        LivebookTestTask.build_config_from_opts(mode: "invalid")
+      end
+    end
+
     test "parses verbose: true" do
       config = LivebookTestTask.build_config_from_opts(verbose: true)
       assert config.verbose == true
@@ -100,6 +112,14 @@ defmodule Mix.Tasks.Livebook.TestTest do
       assert_raise Mix.Error, ~r/Livebook tests failed/, fn ->
         ExUnit.CaptureIO.capture_io(fn ->
           LivebookTestTask.run(["--path", "nonexistent/**/*.livemd"])
+        end)
+      end
+    end
+
+    test "raises on invalid --timeout value via CLI" do
+      assert_raise Mix.Error, ~r/Invalid --timeout value/, fn ->
+        ExUnit.CaptureIO.capture_io(fn ->
+          LivebookTestTask.run(["--path", "examples/basic.livemd", "--timeout", "abc"])
         end)
       end
     end
