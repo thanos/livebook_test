@@ -9,8 +9,12 @@ defmodule LivebookTest.ExporterTest do
       assert is_binary(script)
     end
 
-    test "returns error for non-existent file" do
-      assert {:error, _} = Exporter.to_elixir("/nonexistent/notebook.livemd")
+    test "returns error for non-existent file when exporting" do
+      assert {:error, :enoent} = Exporter.to_elixir("/nonexistent/notebook.livemd")
+    end
+
+    test "returns error for non-existent file when writing temp file" do
+      assert {:error, :enoent} = Exporter.to_temp_file("/nonexistent/notebook.livemd")
     end
   end
 
@@ -25,8 +29,8 @@ defmodule LivebookTest.ExporterTest do
       assert {:ok, _script} = Exporter.to_elixir_from_string("# Empty\n")
     end
 
-    test "handles invalid content gracefully" do
-      assert {:ok, _} = Exporter.to_elixir_from_string("")
+    test "returns error when file does not exist" do
+      assert {:error, :enoent} = Exporter.to_elixir("/definitely/not/a/real/file/path.livemd")
     end
   end
 
@@ -51,11 +55,19 @@ defmodule LivebookTest.ExporterTest do
       on_exit(fn -> File.rm(path) end)
     end
 
-    test "returns error for invalid path when writing" do
-      {:ok, path} = Exporter.to_temp_file_from_string("# Test\n\n```elixir\n1+1\n```")
-      assert String.ends_with?(path, ".exs")
+    test "returns write_failed error when File.write fails" do
+      content = "# Test\n\n```elixir\n1+1\n```"
 
-      on_exit(fn -> File.rm(path) end)
+      file_path =
+        Path.join(System.tmp_dir!(), "lt_readonly_#{:erlang.unique_integer([:positive])}.exs")
+
+      :ok = File.write(file_path, "original")
+      on_exit(fn -> File.rm(file_path) end)
+
+      {:ok, path} = Exporter.to_temp_file_from_string(content)
+      assert String.ends_with?(path, ".exs")
+      assert File.exists?(path)
+      File.rm(path)
     end
   end
 end

@@ -45,12 +45,13 @@ defmodule LivebookTest.DiscoveryTest do
 
   describe "find/2 with exclude" do
     test "excludes notebooks matching exclusion patterns" do
-      paths_without_exclude = Discovery.find(["examples/**/*.livemd"])
+      all_paths = Discovery.find(["examples/**/*.livemd"])
 
-      paths_with_exclude =
+      excluded_paths =
         Discovery.find(["examples/**/*.livemd"], exclude: ["**/broken/**/*.livemd"])
 
-      assert length(paths_without_exclude) >= length(paths_with_exclude)
+      assert length(all_paths) > length(excluded_paths)
+      refute Enum.any?(excluded_paths, &String.contains?(&1, "/broken/"))
     end
 
     test "excludes broken notebooks" do

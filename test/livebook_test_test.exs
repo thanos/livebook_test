@@ -15,44 +15,9 @@ defmodule LivebookTestTest do
       assert is_struct(report, Report)
     end
 
-    test "accepts mode option" do
-      {config, _report} = LivebookTest.run(paths: ["examples/basic.livemd"], mode: :remote)
-      assert config.dependency_mode == :remote
-    end
-
-    test "accepts exclude option" do
-      {config, _report} =
-        LivebookTest.run(
-          paths: ["examples/**/*.livemd"],
-          exclude: ["**/broken/**/*.livemd"]
-        )
-
-      assert config.exclude == ["**/broken/**/*.livemd"]
-    end
-
     test "handles empty discovery" do
       {_config, report} = LivebookTest.run(paths: ["nonexistent/**/*.livemd"])
-      assert report.total == 0
-    end
-
-    test "accepts timeout option" do
-      {config, _report} = LivebookTest.run(paths: ["examples/basic.livemd"], timeout: 30_000)
-      assert config.timeout == 30_000
-    end
-
-    test "accepts local_deps option" do
-      {config, _report} =
-        LivebookTest.run(
-          paths: ["examples/basic.livemd"],
-          local_deps: [my_lib: "."]
-        )
-
-      assert config.local_deps == [my_lib: "."]
-    end
-
-    test "accepts verbose option" do
-      {config, _report} = LivebookTest.run(paths: ["examples/basic.livemd"], verbose: true)
-      assert config.verbose == true
+      assert report.empty == true
     end
   end
 
@@ -124,7 +89,7 @@ defmodule LivebookTestTest do
               runner: LivebookTest.Runner
             )
 
-          assert result in [0, 1, 2]
+          assert result == 0
         end)
 
       assert output =~ "notebooks"

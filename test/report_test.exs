@@ -223,6 +223,7 @@ defmodule LivebookTest.ReportTest do
 
       output = Report.format_verbose(report)
       assert String.contains?(output, "a.livemd")
+      refute String.contains?(output, "stdout:")
     end
 
     test "omits stderr section when empty on success" do
@@ -231,6 +232,7 @@ defmodule LivebookTest.ReportTest do
 
       output = Report.format_verbose(report)
       assert String.contains?(output, "PASS")
+      refute String.contains?(output, "stderr:")
     end
   end
 end
