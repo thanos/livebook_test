@@ -5,9 +5,9 @@ defmodule LivebookTest.Config do
   Handles defaults, runtime options, and Mix config resolution.
   Configuration can be set via:
 
-    * `config/config.exs` — application environment
-    * CLI options — `mix livebook.test --mode local --timeout 120_000`
-    * Programmatic — `LivebookTest.run(paths: [...], mode: :local)`
+    * `config/config.exs` - application environment
+    * CLI options - `mix livebook.test --mode local --timeout 120_000`
+    * Programmatic - `LivebookTest.run(paths: [...], mode: :local)`
 
   ## Application configuration
 

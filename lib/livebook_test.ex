@@ -1,6 +1,6 @@
 defmodule LivebookTest do
   @moduledoc """
-  Test your Livebook notebooks — "mix test for Livebooks".
+  Test your Livebook notebooks - "mix test for Livebooks".
 
   LivebookTest discovers `.livemd` notebooks, converts them to
   executable Elixir scripts, runs them, and reports failures.
@@ -23,11 +23,11 @@ defmodule LivebookTest do
 
   The library processes notebooks through a pipeline:
 
-      1. **Discovery** — find `.livemd` files via glob patterns
-      2. **Export** — convert notebooks to `.exs` scripts
-      3. **Patch** — optionally rewrite Mix.install deps to local paths
-      4. **Run** — execute each script as a subprocess
-      5. **Report** — summarize results and return CI exit codes
+      1. **Discovery** - find `.livemd` files via glob patterns
+      2. **Export** - convert notebooks to `.exs` scripts
+      3. **Patch** - optionally rewrite Mix.install deps to local paths
+      4. **Run** - execute each script as a subprocess
+      5. **Report** - summarize results and return CI exit codes
 
   ## Local dependency testing
 
@@ -72,12 +72,12 @@ defmodule LivebookTest do
 
   ## Options
 
-    - `:paths` — list of glob patterns (default from config)
-    - `:exclude` — list of glob patterns to exclude from discovery
-    - `:mode` — `:remote` or `:local` dependency mode
-    - `:timeout` — per-notebook timeout in milliseconds
-    - `:local_deps` — dependency name → path mapping
-    - `:verbose` — enable verbose output
+    - `:paths` - list of glob patterns (default from config)
+    - `:exclude` - list of glob patterns to exclude from discovery
+    - `:mode` - `:remote` or `:local` dependency mode
+    - `:timeout` - per-notebook timeout in milliseconds
+    - `:local_deps` - dependency name → path mapping
+    - `:verbose` - enable verbose output
 
   ## Examples
 

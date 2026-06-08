@@ -38,8 +38,8 @@ If any notebook fails, the test fails. Your CI pipeline catches problems before 
 
 ## What Doesn't Get Tested
 
-- Visual output (charts, tables) — only code execution
-- User interaction (inputs, forms) — these require a browser
+- Visual output (charts, tables) - only code execution
+- User interaction (inputs, forms) - these require a browser
 - Side effects that require external services
 
 ## When to Test Livebooks

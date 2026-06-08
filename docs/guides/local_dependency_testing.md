@@ -90,7 +90,7 @@ Both dependencies will be rewritten to use local paths.
 
 The `DependencyPatcher` module uses regex-based replacement on the **exported Elixir script** (not the `.livemd` source). This means:
 
-1. Your `.livemd` files remain unchanged — they still reference Hex versions
+1. Your `.livemd` files remain unchanged - they still reference Hex versions
 2. Only the temporary `.exs` scripts used for testing are patched
 3. After the test run, the temporary scripts are deleted automatically
 

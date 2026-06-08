@@ -54,6 +54,13 @@ jobs:
       - name: Run tests
         run: mix test --exclude livebook_integration
 
+      - name: Upload coverage to Coveralls
+        if: startsWith(matrix.elixir, '1.19')
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mix coveralls.github --exclude livebook_integration
+
       - name: Generate documentation
         run: mix docs
 

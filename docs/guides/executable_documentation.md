@@ -1,6 +1,6 @@
 # Executable Documentation
 
-Livebook notebooks are a form of **executable documentation** — documentation that can be verified by running it.
+Livebook notebooks are a form of **executable documentation** - documentation that can be verified by running it.
 
 ## What is Executable Documentation?
 
@@ -12,19 +12,19 @@ Executable documentation is different: the code is **run automatically**, ensuri
 
 Livebook's `.livemd` format is perfect for executable documentation because:
 
-1. **Readable as plain text** — it's Markdown
-2. **Version controllable** — diff-friendly text format
-3. **Runnable** — Livebook can execute it directly
-4. **Testable** — `livebook_test` can verify it in CI
+1. **Readable as plain text** - it's Markdown
+2. **Version controllable** - diff-friendly text format
+3. **Runnable** - Livebook can execute it directly
+4. **Testable** - `livebook_test` can verify it in CI
 
 ## The livebook_test Approach
 
 `livebook_test` treats notebooks as test artifacts:
 
-1. **Discover** — Find all `.livemd` files in your project
-2. **Export** — Convert them to standalone Elixir scripts
-3. **Run** — Execute each script and check for errors
-4. **Report** — Summarize which notebooks pass and fail
+1. **Discover** - Find all `.livemd` files in your project
+2. **Export** - Convert them to standalone Elixir scripts
+3. **Run** - Execute each script and check for errors
+4. **Report** - Summarize which notebooks pass and fail
 
 This creates a feedback loop: documentation that breaks is caught immediately.
 

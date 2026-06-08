@@ -1,8 +1,8 @@
 # livebook_test
 
-> **mix test for Livebooks** — Keep your Livebook examples honest.
+> **mix test for Livebooks** - Keep your Livebook examples honest.
 
-`livebook_test` brings `mix test`-style workflows to Livebook notebooks. It discovers `.livemd` files, converts them to executable Elixir scripts, runs them, and reports failures — locally and in CI/CD.
+`livebook_test` brings `mix test`-style workflows to Livebook notebooks. It discovers `.livemd` files, converts them to executable Elixir scripts, runs them, and reports failures - locally and in CI/CD.
 
 [![CI](https://github.com/thanos/livebook_test/actions/workflows/ci.yml/badge.svg)](https://github.com/thanos/livebook_test/actions/workflows/ci.yml)
 [![Hex version](https://img.shields.io/hexpm/v/livebook_test.svg)](https://hex.pm/packages/livebook_test)
@@ -58,9 +58,9 @@ mix livebook.test --path examples/basic.livemd
 
 | Notebook | Description |
 |----------|-------------|
-| `examples/basic.livemd` | Simple arithmetic and IO — passes |
-| `examples/mix_install.livemd` | Uses `Mix.install` with Jason — passes |
-| `examples/broken/broken.livemd` | Intentionally failing cells — use to verify failure reporting |
+| `examples/basic.livemd` | Simple arithmetic and IO - passes |
+| `examples/mix_install.livemd` | Uses `Mix.install` with Jason - passes |
+| `examples/broken/broken.livemd` | Intentionally failing cells - use to verify failure reporting |
 | `livebooks/local_dep.livemd` | Uses `Mix.install` with local dependency patching |
 
 ## Configuration
@@ -171,11 +171,11 @@ LivebookTest.run_and_report(verbose: true)
 
 Notebooks flow through a pipeline:
 
-1. **Discovery** — Find `.livemd` files via glob patterns
-2. **Export** — Convert to `.exs` scripts using `Livebook.live_markdown_to_elixir/1`
-3. **Patch** — Optionally rewrite `Mix.install` deps to local paths
-4. **Run** — Execute each script as an isolated subprocess
-5. **Report** — Summarize results with pass/fail counts and timing
+1. **Discovery** - Find `.livemd` files via glob patterns
+2. **Export** - Convert to `.exs` scripts using `Livebook.live_markdown_to_elixir/1`
+3. **Patch** - Optionally rewrite `Mix.install` deps to local paths
+4. **Run** - Execute each script as an isolated subprocess
+5. **Report** - Summarize results with pass/fail counts and timing
 
 ## Example Output
 
