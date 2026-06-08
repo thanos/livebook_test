@@ -81,6 +81,7 @@ defmodule LivebookTest.MixProject do
       description:
         "Bring mix test-style workflows to Livebook. Test .livemd notebooks locally and in CI/CD.",
       licenses: ["MIT"],
+      maintainers: ["Thanos Vassilakis"],
       links: %{
         "GitHub" => @source_url,
         "HexDocs" => "https://hexdocs.pm/livebook_test"
