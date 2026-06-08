@@ -50,8 +50,8 @@ mix livebook.test --verbose
 # Test against local checkout instead of Hex
 mix livebook.test --mode local
 
-# Run a specific notebook (including a broken one to verify failure detection)
-mix livebook.test --path examples/broken.livemd
+# Run a specific notebook
+mix livebook.test --path examples/basic.livemd
 ```
 
 ### Example Notebooks
@@ -60,7 +60,8 @@ mix livebook.test --path examples/broken.livemd
 |----------|-------------|
 | `examples/basic.livemd` | Simple arithmetic and IO — passes |
 | `examples/mix_install.livemd` | Uses `Mix.install` with Jason — passes |
-| `examples/broken.livemd` | Intentionally failing cells — use to verify failure reporting |
+| `examples/broken/broken.livemd` | Intentionally failing cells — use to verify failure reporting |
+| `livebooks/local_dep.livemd` | Uses `Mix.install` with local dependency patching |
 
 ## Configuration
 
@@ -68,7 +69,8 @@ Configure in `config/config.exs`:
 
 ```elixir
 config :livebook_test,
-  paths: ["examples/basic.livemd", "examples/mix_install.livemd"],
+  paths: ["livebooks/**/*.livemd", "examples/**/*.livemd"],
+  exclude: ["**/broken/**/*.livemd"],
   dependency_mode: :remote,
   timeout: 60_000,
   local_deps: [],
@@ -79,10 +81,11 @@ config :livebook_test,
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `paths` | `["examples/basic.livemd", "examples/mix_install.livemd"]` | Glob patterns or explicit paths for notebook discovery |
+| `paths` | `["livebooks/**/*.livemd", "examples/**/*.livemd"]` | Glob patterns for notebook discovery |
+| `exclude` | `["**/broken/**/*.livemd"]` | Glob patterns to exclude from discovery |
 | `dependency_mode` | `:remote` | `:remote` leaves deps unchanged, `:local` rewrites to path deps |
 | `timeout` | `60_000` | Per-notebook timeout in milliseconds |
-| `local_deps` | `[]` | Map of dependency names to local paths |
+| `local_deps` | `[]` | Keyword list mapping dependency names to local paths |
 | `verbose` | `false` | Show per-notebook details |
 
 ## Local Dependency Testing
@@ -136,7 +139,7 @@ With local deps:
   run: mix livebook.test --mode local
 ```
 
-The task exits with code `0` on success and `1` on failure, perfect for CI gates.
+The task exits with code `0` on success, `1` on failure, and `2` if no notebooks are discovered, perfect for CI gates.
 
 ## CLI Options
 
@@ -144,10 +147,11 @@ The task exits with code `0` on success and `1` on failure, perfect for CI gates
 mix livebook.test [options]
 
 Options:
-  --path PATTERN   Glob pattern for discovery (repeatable)
-  --mode MODE      Dependency mode: local or remote
-  --timeout SECS   Per-notebook timeout in seconds
-  --verbose        Show per-notebook details
+  --path PATTERN    Glob pattern for discovery (repeatable)
+  --exclude PATTERN Glob pattern to exclude from discovery (repeatable)
+  --mode MODE       Dependency mode: local or remote
+  --timeout SECS    Per-notebook timeout in seconds
+  --verbose         Show per-notebook details
 ```
 
 ## Programmatic API
@@ -195,9 +199,10 @@ Total time: 5.3s
 Failed notebooks:
 --------------------
 
-  examples/failing.livemd
+  examples/broken/broken.livemd
   exit: 1
-    RuntimeError: Intentional failure for testing
+    stderr:
+    ** (RuntimeError) Intentional failure for testing
 ```
 
 ## Architecture

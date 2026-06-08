@@ -46,6 +46,7 @@ jobs:
 
 - **0** — all notebooks passed
 - **1** — one or more notebooks failed
+- **2** — no notebooks discovered (check your paths and exclude patterns)
 
 This matches standard CI expectations.
 
@@ -65,15 +66,24 @@ config :livebook_test, timeout: 180_000
 
 ## Caching Mix.install Dependencies
 
-`Mix.install` downloads packages to a cache directory. In CI, you can cache this directory to speed up runs:
+`Mix.install` downloads and compiles packages to a cache directory on first use. The default location varies by platform but can be controlled with the `MIX_INSTALL_DIR` environment variable. In CI, you can cache this directory to speed up runs:
 
 ```yaml
 - name: Cache Mix.install
   uses: actions/cache@v4
   with:
-    path: ~/livebook_test_cache
+    path: ~/.cache/mix_install
     key: livebook-deps-${{ hashFiles('**/*.livemd') }}
+  env:
+    MIX_INSTALL_DIR: ~/.cache/mix_install
+
+- name: Test Livebooks
+  run: mix livebook.test
+  env:
+    MIX_INSTALL_DIR: ~/.cache/mix_install
 ```
+
+See the [Mix.install documentation](https://hexdocs.pm/mix/Mix.html#install/2) for details on cache configuration.
 
 ## Selective Testing
 

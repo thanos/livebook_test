@@ -56,6 +56,7 @@ defmodule LivebookTest.MixProject do
       source_ref: "v#{@version}",
       extras: [
         "README.md",
+        "LICENSE",
         "docs/guides/why_test_livebooks.md",
         "docs/guides/cicd_for_livebook_notebooks.md",
         "docs/guides/local_dependency_testing.md",

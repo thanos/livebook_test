@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Initial release of `livebook_test`
-- `mix livebook.test` Mix task with `--path`, `--mode`, `--timeout`, `--verbose` options
+- `mix livebook.test` Mix task with `--path`, `--exclude`, `--mode`, `--timeout`, `--verbose` options
 - Notebook discovery via glob patterns (`LivebookTest.Discovery`)
 - Notebook export using `Livebook.live_markdown_to_elixir/1` (`LivebookTest.Exporter`)
 - Dependency patching for local testing (`LivebookTest.DependencyPatcher`)

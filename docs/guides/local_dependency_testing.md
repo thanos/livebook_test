@@ -92,7 +92,7 @@ The `DependencyPatcher` module uses regex-based replacement on the **exported El
 
 1. Your `.livemd` files remain unchanged — they still reference Hex versions
 2. Only the temporary `.exs` scripts used for testing are patched
-3. The patching is transparent and reversible
+3. After the test run, the temporary scripts are deleted automatically
 
 ## When to Use Remote vs Local
 
