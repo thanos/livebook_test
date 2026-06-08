@@ -45,7 +45,7 @@ jobs:
       - name: Verify changelog entry
         run: |
           VERSION="${GITHUB_REF#refs/tags/v}"
-          head -5 CHANGELOG.md | grep -q "$VERSION" || {
+          grep -qF "[$VERSION]" CHANGELOG.md || {
             echo "CHANGELOG.md does not contain entry for $VERSION"
             exit 1
           }

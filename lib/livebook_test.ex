@@ -62,16 +62,13 @@ defmodule LivebookTest do
           | {:verbose, boolean()}
 
   @typedoc "Result of a complete test run"
-  @type run_result :: %{
-          config: LivebookTest.Config.t(),
-          report: LivebookTest.Report.t()
-        }
+  @type run_result :: {LivebookTest.Config.t(), LivebookTest.Report.t()}
 
   @doc """
   Discovers, exports, patches, runs, and reports on Livebook notebooks.
 
   This is the primary entry point. It orchestrates the full pipeline
-  and returns a map with the resolved config and the report.
+  and returns a tuple with the resolved config and the report.
 
   ## Options
 
@@ -84,8 +81,8 @@ defmodule LivebookTest do
 
   ## Examples
 
-      iex> result = LivebookTest.run(paths: ["examples/**/*.livemd"])
-      iex> is_map(result) and Map.has_key?(result, :report)
+      iex> {config, report} = LivebookTest.run(paths: ["examples/**/*.livemd"])
+      iex> is_struct(config, LivebookTest.Config) and is_struct(report, LivebookTest.Report)
       true
   """
   @spec run([run_option()]) :: run_result()
@@ -105,7 +102,7 @@ defmodule LivebookTest do
   ## Examples
 
       iex> config = LivebookTest.Config.resolve(paths: ["examples/**/*.livemd"])
-      iex> {config, report} = LivebookTest.run_with_config(config)
+      iex> report = LivebookTest.run_with_config(config)
       iex> is_struct(report, LivebookTest.Report)
       true
   """

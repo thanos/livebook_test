@@ -110,10 +110,6 @@ defmodule Mix.Tasks.Livebook.Test do
   defp put_paths(overrides, nil), do: overrides
   defp put_paths(overrides, paths), do: Keyword.put(overrides, :paths, paths)
 
-  defp put_excludes(overrides, paths, excludes) when is_list(paths) and is_nil(excludes) do
-    Keyword.put(overrides, :exclude, [])
-  end
-
   defp put_excludes(overrides, _paths, nil), do: overrides
   defp put_excludes(overrides, _paths, excludes), do: Keyword.put(overrides, :exclude, excludes)
 

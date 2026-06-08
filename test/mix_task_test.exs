@@ -26,10 +26,10 @@ defmodule Mix.Tasks.Livebook.TestTest do
       assert config.exclude == ["**/broken/**", "**/skip/**"]
     end
 
-    test "clears excludes when explicit path given without excludes" do
+    test "preserves default excludes when explicit path given without excludes" do
       config = LivebookTestTask.build_config_from_opts(path: "specific.livemd")
       assert config.paths == ["specific.livemd"]
-      assert config.exclude == []
+      assert config.exclude == LivebookTest.Config.resolve([]).exclude
     end
 
     test "parses mode: local" do
@@ -76,9 +76,22 @@ defmodule Mix.Tasks.Livebook.TestTest do
     end
 
     test "raises when notebooks fail" do
+      broken_path =
+        Path.join(System.tmp_dir!(), "lt_broken_#{:erlang.unique_integer([:positive])}.livemd")
+
+      File.write!(broken_path, """
+      # Test
+
+      ```elixir
+      raise "deliberate failure"
+      ```
+      """)
+
+      on_exit(fn -> File.rm(broken_path) end)
+
       assert_raise Mix.Error, ~r/Livebook tests failed/, fn ->
         ExUnit.CaptureIO.capture_io(fn ->
-          LivebookTestTask.run(["--path", "examples/broken/broken.livemd"])
+          LivebookTestTask.run(["--path", broken_path])
         end)
       end
     end

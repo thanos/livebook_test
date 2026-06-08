@@ -145,11 +145,11 @@ defmodule LivebookTest.Runner do
       run_opts =
         opts |> Keyword.put(:timeout, timeout) |> Keyword.put(:notebook_path, notebook_path)
 
-      run(script_path, run_opts)
+      {notebook_path, run(script_path, run_opts)}
     end)
     |> Enum.map(fn
-      {:ok, result} -> result
-      {:error, reason} -> error_result(reason, opts)
+      {_notebook_path, {:ok, result}} -> result
+      {notebook_path, {:error, reason}} -> error_result(reason, notebook_path)
     end)
   end
 
@@ -170,9 +170,7 @@ defmodule LivebookTest.Runner do
   def success?(%__MODULE__{exit_status: 0, timed_out: false}), do: true
   def success?(%__MODULE__{}), do: false
 
-  defp error_result(reason, opts) do
-    notebook_path = Keyword.get(opts, :notebook_path, "unknown")
-
+  defp error_result(reason, notebook_path) do
     %__MODULE__{
       notebook_path: notebook_path,
       script_path: "",
