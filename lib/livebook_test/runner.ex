@@ -86,7 +86,7 @@ defmodule LivebookTest.Runner do
     task =
       Task.async(fn ->
         System.cmd("elixir", [script_path],
-          stderr_to_stdout: false,
+          stderr_to_stdout: true,
           env: [{"MIX_ENV", "test"}]
         )
       end)
@@ -95,16 +95,13 @@ defmodule LivebookTest.Runner do
       {:ok, {output, exit_status}} ->
         duration_ms = System.monotonic_time(:millisecond) - start_time
 
-        {stdout, stderr} =
-          split_output(output)
-
         {:ok,
          %__MODULE__{
            notebook_path: notebook_path,
            script_path: script_path,
            exit_status: exit_status,
-           stdout: stdout,
-           stderr: stderr,
+           stdout: output,
+           stderr: "",
            duration_ms: duration_ms,
            timed_out: false
          }}
@@ -172,10 +169,6 @@ defmodule LivebookTest.Runner do
   @spec success?(run_result()) :: boolean()
   def success?(%__MODULE__{exit_status: 0, timed_out: false}), do: true
   def success?(%__MODULE__{}), do: false
-
-  defp split_output(output) do
-    {output, ""}
-  end
 
   defp error_result(reason, opts) do
     notebook_path = Keyword.get(opts, :notebook_path, "unknown")

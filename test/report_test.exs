@@ -105,6 +105,23 @@ defmodule LivebookTest.ReportTest do
       output = Report.format(report)
       assert String.contains?(output, "fail.livemd")
     end
+
+    test "includes failure with empty stderr" do
+      report = %Report{
+        total: 1,
+        passed: 0,
+        failed: 1,
+        duration_ms: 100,
+        results: [],
+        failed_notebooks: [
+          make_result(notebook_path: "fail.livemd", exit_status: 1, stderr: "")
+        ]
+      }
+
+      output = Report.format(report)
+      assert String.contains?(output, "fail.livemd")
+      assert String.contains?(output, "exit: 1")
+    end
   end
 
   describe "exit_code/1" do
@@ -142,6 +159,40 @@ defmodule LivebookTest.ReportTest do
 
       output = Report.format_verbose(report)
       assert String.contains?(output, "a.livemd")
+    end
+
+    test "shows stdout when present" do
+      results = [make_result(notebook_path: "a.livemd", stdout: "hello world")]
+      report = Report.build(results)
+
+      output = Report.format_verbose(report)
+      assert String.contains?(output, "hello world")
+    end
+
+    test "shows stderr when present" do
+      results = [
+        make_result(notebook_path: "a.livemd", exit_status: 1, stderr: "error details")
+      ]
+
+      report = Report.build(results)
+      output = Report.format_verbose(report)
+      assert String.contains?(output, "error details")
+    end
+
+    test "omits stdout section when empty" do
+      results = [make_result(notebook_path: "a.livemd", stdout: "")]
+      report = Report.build(results)
+
+      output = Report.format_verbose(report)
+      assert String.contains?(output, "a.livemd")
+    end
+
+    test "omits stderr section when empty on success" do
+      results = [make_result(notebook_path: "a.livemd", stderr: "")]
+      report = Report.build(results)
+
+      output = Report.format_verbose(report)
+      assert String.contains?(output, "PASS")
     end
   end
 end

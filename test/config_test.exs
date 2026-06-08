@@ -57,14 +57,29 @@ defmodule LivebookTest.ConfigTest do
       assert config.dependency_mode == :remote
     end
 
+    test "parses mode as atom" do
+      config = Config.from_cli(mode: :custom)
+      assert config.dependency_mode == :custom
+    end
+
     test "parses timeout as string (seconds)" do
       config = Config.from_cli(timeout: "120")
       assert config.timeout == 120_000
     end
 
+    test "parses timeout as integer (milliseconds)" do
+      config = Config.from_cli(timeout: 30_000)
+      assert config.timeout == 30_000
+    end
+
     test "parses verbose: true" do
       config = Config.from_cli(verbose: true)
       assert config.verbose == true
+    end
+
+    test "parses verbose: false" do
+      config = Config.from_cli(verbose: false)
+      assert config.verbose == false
     end
 
     test "parses path option" do

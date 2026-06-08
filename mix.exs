@@ -14,7 +14,18 @@ defmodule LivebookTest.MixProject do
       docs: docs(),
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      aliases: aliases()
+      aliases: aliases(),
+      test_coverage: [tool: ExCoveralls]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test
+      ]
     ]
   end
 
@@ -31,7 +42,10 @@ defmodule LivebookTest.MixProject do
     [
       {:livebook, "~> 0.19.0", runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
-      {:jason, "~> 1.4", optional: true}
+      {:jason, "~> 1.4", optional: true},
+      {:credo, "~> 1.7.17", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.18", only: :test},
+      {:mox, "~> 1.2", only: :test}
     ]
   end
 

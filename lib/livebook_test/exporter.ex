@@ -59,12 +59,9 @@ defmodule LivebookTest.Exporter do
   """
   @spec to_elixir_from_string(String.t()) :: export_result()
   def to_elixir_from_string(content) when is_binary(content) do
-    try do
-      script = Livebook.live_markdown_to_elixir(content)
-      {:ok, script}
-    rescue
-      e -> {:error, {:export_failed, Exception.message(e)}}
-    end
+    {:ok, Livebook.live_markdown_to_elixir(content)}
+  rescue
+    e -> {:error, {:export_failed, Exception.message(e)}}
   end
 
   @doc """

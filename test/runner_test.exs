@@ -10,7 +10,7 @@ defmodule LivebookTest.RunnerTest do
 
       File.write!(script_path, "IO.puts(:hello)")
 
-      assert {:ok, result} = Runner.run(script_path)
+      {:ok, result} = Runner.run(script_path)
       assert result.exit_status == 0
       assert result.timed_out == false
 
@@ -23,7 +23,7 @@ defmodule LivebookTest.RunnerTest do
 
       File.write!(script_path, "IO.puts(\"captured output\")")
 
-      assert {:ok, result} = Runner.run(script_path)
+      {:ok, result} = Runner.run(script_path)
       assert String.contains?(result.stdout, "captured output")
 
       File.rm(script_path)
@@ -35,7 +35,7 @@ defmodule LivebookTest.RunnerTest do
 
       File.write!(script_path, "raise \"test failure\"")
 
-      assert {:ok, result} = Runner.run(script_path)
+      {:ok, result} = Runner.run(script_path)
       assert result.exit_status != 0
 
       File.rm(script_path)
@@ -48,7 +48,7 @@ defmodule LivebookTest.RunnerTest do
 
       File.write!(script_path, "Process.sleep(10_000)")
 
-      assert {:ok, result} = Runner.run(script_path, timeout: 100)
+      {:ok, result} = Runner.run(script_path, timeout: 100)
       assert result.timed_out == true
 
       File.rm(script_path)

@@ -64,9 +64,9 @@ defmodule Mix.Tasks.Livebook.Test do
 
     Mix.Task.run("app.start", [])
 
-    cli_config = build_config_from_opts(opts)
+    config = build_config_from_opts(opts)
 
-    {config, report} = LivebookTest.run(cli_config)
+    report = LivebookTest.run_with_config(config)
 
     output =
       if config.verbose do
@@ -84,56 +84,60 @@ defmodule Mix.Tasks.Livebook.Test do
     end
   end
 
-  defp build_config_from_opts(opts) do
-    paths =
-      opts
-      |> Keyword.get_values(:path)
-      |> case do
-        [] -> nil
-        paths -> paths
-      end
-
-    excludes =
-      opts
-      |> Keyword.get_values(:exclude)
-      |> case do
-        [] -> nil
-        excludes -> excludes
-      end
-
-    overrides = []
+  @doc false
+  def build_config_from_opts(opts) do
+    paths = parse_repeated_opt(opts, :path)
+    excludes = parse_repeated_opt(opts, :exclude)
 
     overrides =
-      if paths, do: Keyword.put(overrides, :paths, paths), else: overrides
+      []
+      |> put_paths(paths)
+      |> put_excludes(paths, excludes)
+      |> put_mode(opts)
+      |> put_timeout(opts)
+      |> put_verbose(opts)
 
-    overrides =
-      cond do
-        paths && is_nil(excludes) -> Keyword.put(overrides, :exclude, [])
-        excludes -> Keyword.put(overrides, :exclude, excludes)
-        true -> overrides
-      end
+    LivebookTest.Config.resolve(overrides)
+  end
 
-    overrides =
-      case Keyword.get(opts, :mode) do
-        nil -> overrides
-        "local" -> Keyword.put(overrides, :dependency_mode, :local)
-        "remote" -> Keyword.put(overrides, :dependency_mode, :remote)
-        mode -> Keyword.put(overrides, :dependency_mode, String.to_atom(mode))
-      end
+  defp parse_repeated_opt(opts, key) do
+    case Keyword.get_values(opts, key) do
+      [] -> nil
+      values -> values
+    end
+  end
 
-    overrides =
-      case Keyword.get(opts, :timeout) do
-        nil -> overrides
-        timeout -> Keyword.put(overrides, :timeout, String.to_integer(timeout) * 1000)
-      end
+  defp put_paths(overrides, nil), do: overrides
+  defp put_paths(overrides, paths), do: Keyword.put(overrides, :paths, paths)
 
-    overrides =
-      case Keyword.get(opts, :verbose) do
-        nil -> overrides
-        true -> Keyword.put(overrides, :verbose, true)
-        false -> overrides
-      end
+  defp put_excludes(overrides, paths, excludes) when is_list(paths) and is_nil(excludes) do
+    Keyword.put(overrides, :exclude, [])
+  end
 
-    overrides
+  defp put_excludes(overrides, _paths, nil), do: overrides
+  defp put_excludes(overrides, _paths, excludes), do: Keyword.put(overrides, :exclude, excludes)
+
+  defp put_mode(overrides, opts) do
+    case Keyword.get(opts, :mode) do
+      nil -> overrides
+      "local" -> Keyword.put(overrides, :dependency_mode, :local)
+      "remote" -> Keyword.put(overrides, :dependency_mode, :remote)
+      mode -> Keyword.put(overrides, :dependency_mode, String.to_atom(mode))
+    end
+  end
+
+  defp put_timeout(overrides, opts) do
+    case Keyword.get(opts, :timeout) do
+      nil -> overrides
+      timeout -> Keyword.put(overrides, :timeout, String.to_integer(timeout) * 1000)
+    end
+  end
+
+  defp put_verbose(overrides, opts) do
+    case Keyword.get(opts, :verbose) do
+      nil -> overrides
+      true -> Keyword.put(overrides, :verbose, true)
+      false -> overrides
+    end
   end
 end

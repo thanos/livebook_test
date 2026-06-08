@@ -109,50 +109,58 @@ defmodule LivebookTest do
       iex> is_struct(report, LivebookTest.Report)
       true
   """
-  @spec run_with_config(LivebookTest.Config.t()) :: LivebookTest.Report.t()
-  def run_with_config(%LivebookTest.Config{} = config) do
+  @spec run_with_config(LivebookTest.Config.t(), keyword()) :: LivebookTest.Report.t()
+  def run_with_config(%LivebookTest.Config{} = config, opts \\ []) do
+    runner_mod = Keyword.get(opts, :runner, LivebookTest.Runner)
     notebooks = LivebookTest.Discovery.find(config.paths, exclude: config.exclude)
 
-    if config.verbose do
-      IO.puts("[LivebookTest] Discovered #{length(notebooks)} notebook(s)")
+    log_verbose(config, "Discovered #{length(notebooks)} notebook(s)")
+
+    script_pairs = export_notebooks(notebooks, config)
+    results = runner_mod.run_all(script_pairs, timeout: config.timeout)
+
+    cleanup_scripts(script_pairs)
+
+    LivebookTest.Report.build(results)
+  end
+
+  defp log_verbose(config, message) do
+    if config.verbose, do: IO.puts("[LivebookTest] #{message}")
+  end
+
+  defp export_notebooks(notebooks, config) do
+    notebooks
+    |> Enum.map(fn notebook_path ->
+      {:ok, script_path} = LivebookTest.Exporter.to_temp_file(notebook_path)
+      {notebook_path, script_path}
+    end)
+    |> maybe_patch_deps(config)
+  end
+
+  defp maybe_patch_deps(script_pairs, config) do
+    if config.dependency_mode == :local do
+      Enum.map(script_pairs, &patch_local_deps(&1, config))
+    else
+      script_pairs
     end
+  end
 
-    script_pairs =
-      notebooks
-      |> Enum.map(fn notebook_path ->
-        {:ok, script_path} = LivebookTest.Exporter.to_temp_file(notebook_path)
-        {notebook_path, script_path}
-      end)
+  defp patch_local_deps({notebook_path, script_path}, config) do
+    log_verbose(config, "Patching #{notebook_path} with local deps")
 
-    script_pairs =
-      if config.dependency_mode == :local do
-        Enum.map(script_pairs, fn {notebook_path, script_path} ->
-          if config.verbose do
-            IO.puts("[LivebookTest] Patching #{notebook_path} with local deps")
-          end
+    {:ok, script_content} = File.read(script_path)
 
-          {:ok, script_content} = File.read(script_path)
+    patched =
+      LivebookTest.DependencyPatcher.patch(script_content, :local, config.local_deps)
 
-          patched =
-            LivebookTest.DependencyPatcher.patch(script_content, :local, config.local_deps)
+    :ok = File.write(script_path, patched)
+    {notebook_path, script_path}
+  end
 
-          :ok = File.write(script_path, patched)
-          {notebook_path, script_path}
-        end)
-      else
-        script_pairs
-      end
-
-    results =
-      LivebookTest.Runner.run_all(script_pairs,
-        timeout: config.timeout
-      )
-
+  defp cleanup_scripts(script_pairs) do
     Enum.each(script_pairs, fn {_notebook_path, script_path} ->
       File.rm(script_path)
     end)
-
-    LivebookTest.Report.build(results)
   end
 
   @doc """
@@ -183,38 +191,30 @@ defmodule LivebookTest do
   end
 
   defp build_overrides(opts) do
-    overrides = []
+    []
+    |> maybe_put(opts, :paths, :paths)
+    |> maybe_put_mode(opts)
+    |> maybe_put(opts, :timeout, :timeout)
+    |> maybe_put(opts, :local_deps, :local_deps)
+    |> maybe_put(opts, :exclude, :exclude)
+    |> maybe_put_verbose(opts)
+  end
 
-    overrides =
-      case Keyword.get(opts, :paths) do
-        nil -> overrides
-        paths -> Keyword.put(overrides, :paths, paths)
-      end
+  defp maybe_put(overrides, opts, source_key, dest_key) do
+    case Keyword.get(opts, source_key) do
+      nil -> overrides
+      value -> Keyword.put(overrides, dest_key, value)
+    end
+  end
 
-    overrides =
-      case Keyword.get(opts, :mode) do
-        nil -> overrides
-        mode -> Keyword.put(overrides, :dependency_mode, mode)
-      end
+  defp maybe_put_mode(overrides, opts) do
+    case Keyword.get(opts, :mode) do
+      nil -> overrides
+      mode -> Keyword.put(overrides, :dependency_mode, mode)
+    end
+  end
 
-    overrides =
-      case Keyword.get(opts, :timeout) do
-        nil -> overrides
-        timeout -> Keyword.put(overrides, :timeout, timeout)
-      end
-
-    overrides =
-      case Keyword.get(opts, :local_deps) do
-        nil -> overrides
-        local_deps -> Keyword.put(overrides, :local_deps, local_deps)
-      end
-
-    overrides =
-      case Keyword.get(opts, :exclude) do
-        nil -> overrides
-        exclude -> Keyword.put(overrides, :exclude, exclude)
-      end
-
+  defp maybe_put_verbose(overrides, opts) do
     case Keyword.get(opts, :verbose) do
       nil -> overrides
       verbose -> Keyword.put(overrides, :verbose, verbose)
