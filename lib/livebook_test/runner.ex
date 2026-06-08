@@ -11,7 +11,7 @@ defmodule LivebookTest.Runner do
 
     - Exit status (0 = success, non-zero = failure)
     - Captured stdout
-    - Captured stderr
+    - Captured stderr (merged into stdout via `stderr_to_stdout: true`)
     - Execution timing
 
   ## Why subprocess execution?
@@ -20,6 +20,14 @@ defmodule LivebookTest.Runner do
   global application environment. Running scripts in isolated subprocesses
   prevents side effects from leaking between notebook tests.
 
+  > **Note on timeouts**: When a notebook execution times out, the BEAM
+  > task is shut down via `Task.shutdown/2`. However, the underlying
+  > `elixir` OS process may continue running (e.g., during a lengthy
+  > `Mix.install` compilation). This is a known limitation of
+  > `System.cmd`-based subprocess management. If this becomes an issue,
+  > consider configuring a shorter timeout or using a process supervision
+  > strategy that tracks OS process lifecycles.
+
   ## Examples
 
       iex> {:ok, script_path} = LivebookTest.Exporter.to_temp_file("examples/basic.livemd")
@@ -27,6 +35,8 @@ defmodule LivebookTest.Runner do
       iex> result.exit_status
       0
   """
+
+  @behaviour LivebookTest.Runner.Behaviour
 
   @typedoc "Result of a single notebook execution"
   @type run_result :: %__MODULE__{
@@ -77,6 +87,7 @@ defmodule LivebookTest.Runner do
       true
   """
   @spec run(Path.t(), keyword()) :: run_outcome()
+  @impl true
   def run(script_path, opts \\ []) do
     timeout = Keyword.get(opts, :timeout, 60_000)
     notebook_path = Keyword.get(opts, :notebook_path, script_path)
@@ -137,6 +148,7 @@ defmodule LivebookTest.Runner do
       []
   """
   @spec run_all([{Path.t(), Path.t()}], keyword()) :: [run_result()]
+  @impl true
   def run_all(script_pairs, opts \\ []) when is_list(script_pairs) do
     timeout = Keyword.get(opts, :timeout, 60_000)
 

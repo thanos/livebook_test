@@ -114,11 +114,13 @@ defmodule LivebookTest do
     log_verbose(config, "Discovered #{length(notebooks)} notebook(s)")
 
     script_pairs = export_notebooks(notebooks, config)
-    results = runner_mod.run_all(script_pairs, timeout: config.timeout)
 
-    cleanup_scripts(script_pairs)
-
-    LivebookTest.Report.build(results)
+    try do
+      results = runner_mod.run_all(script_pairs, timeout: config.timeout)
+      LivebookTest.Report.build(results)
+    after
+      cleanup_scripts(script_pairs)
+    end
   end
 
   defp log_verbose(config, message) do
@@ -128,9 +130,16 @@ defmodule LivebookTest do
   defp export_notebooks(notebooks, config) do
     notebooks
     |> Enum.map(fn notebook_path ->
-      {:ok, script_path} = LivebookTest.Exporter.to_temp_file(notebook_path)
-      {notebook_path, script_path}
+      case LivebookTest.Exporter.to_temp_file(notebook_path) do
+        {:ok, script_path} ->
+          {notebook_path, script_path}
+
+        {:error, reason} ->
+          log_verbose(config, "Failed to export #{notebook_path}: #{inspect(reason)}")
+          nil
+      end
     end)
+    |> Enum.reject(&is_nil/1)
     |> maybe_patch_deps(config)
   end
 
@@ -145,13 +154,28 @@ defmodule LivebookTest do
   defp patch_local_deps({notebook_path, script_path}, config) do
     log_verbose(config, "Patching #{notebook_path} with local deps")
 
-    {:ok, script_content} = File.read(script_path)
+    case File.read(script_path) do
+      {:ok, script_content} ->
+        patched =
+          LivebookTest.DependencyPatcher.patch(script_content, :local, config.local_deps)
 
-    patched =
-      LivebookTest.DependencyPatcher.patch(script_content, :local, config.local_deps)
+        case File.write(script_path, patched) do
+          :ok ->
+            {notebook_path, script_path}
 
-    :ok = File.write(script_path, patched)
-    {notebook_path, script_path}
+          {:error, reason} ->
+            log_verbose(
+              config,
+              "Failed to write patched script #{script_path}: #{inspect(reason)}"
+            )
+
+            {notebook_path, script_path}
+        end
+
+      {:error, reason} ->
+        log_verbose(config, "Failed to read script #{script_path}: #{inspect(reason)}")
+        {notebook_path, script_path}
+    end
   end
 
   defp cleanup_scripts(script_pairs) do
@@ -168,10 +192,10 @@ defmodule LivebookTest do
 
   ## Examples
 
-      iex> LivebookTest.run_and_report(paths: ["examples/**/*.livemd"]) in [0, 1]
+      iex> LivebookTest.run_and_report(paths: ["examples/**/*.livemd"]) in [0, 1, 2]
       true
   """
-  @spec run_and_report([run_option()]) :: 0 | 1
+  @spec run_and_report([run_option()]) :: 0 | 1 | 2
   def run_and_report(opts \\ []) do
     {config, report} = run(opts)
 

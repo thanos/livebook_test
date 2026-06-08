@@ -96,14 +96,21 @@ defmodule Mix.Tasks.Livebook.TestTest do
       end
     end
 
+    test "raises when no notebooks discovered" do
+      assert_raise Mix.Error, ~r/Livebook tests failed/, fn ->
+        ExUnit.CaptureIO.capture_io(fn ->
+          LivebookTestTask.run(["--path", "nonexistent/**/*.livemd"])
+        end)
+      end
+    end
+
     test "passes with verbose flag" do
       output =
         ExUnit.CaptureIO.capture_io(fn ->
           LivebookTestTask.run(["--path", "examples/basic.livemd", "--verbose"])
         end)
 
-      assert output =~ "notebook execution details" ||
-               output =~ "notebooks"
+      assert output =~ "Notebook execution details:"
     end
   end
 end

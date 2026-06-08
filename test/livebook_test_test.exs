@@ -8,7 +8,7 @@ defmodule LivebookTestTest do
   setup :verify_on_exit!
 
   describe "run/1" do
-    test "returns map with config and report" do
+    test "returns tuple with config and report" do
       {config, report} = LivebookTest.run(paths: ["examples/basic.livemd"])
 
       assert is_struct(config, Config)
@@ -124,7 +124,7 @@ defmodule LivebookTestTest do
               runner: LivebookTest.Runner
             )
 
-          assert result in [0, 1]
+          assert result in [0, 1, 2]
         end)
 
       assert output =~ "notebooks"
@@ -134,10 +134,10 @@ defmodule LivebookTestTest do
       output =
         ExUnit.CaptureIO.capture_io(fn ->
           result = LivebookTest.run_and_report(paths: ["nonexistent/**/*.livemd"])
-          assert result == 0
+          assert result == 2
         end)
 
-      assert output =~ "0 notebooks"
+      assert output =~ "0 notebooks found"
     end
 
     test "prints verbose report when verbose is true" do
@@ -149,8 +149,7 @@ defmodule LivebookTestTest do
           )
         end)
 
-      assert output =~ "notebook execution details" ||
-               output =~ "notebooks"
+      assert output =~ "Notebook execution details:"
     end
   end
 end

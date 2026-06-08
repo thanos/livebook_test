@@ -27,11 +27,12 @@ defmodule LivebookTest.Report do
           failed: non_neg_integer(),
           duration_ms: non_neg_integer(),
           results: [LivebookTest.Runner.run_result()],
-          failed_notebooks: [LivebookTest.Runner.run_result()]
+          failed_notebooks: [LivebookTest.Runner.run_result()],
+          empty: boolean()
         }
 
-  @enforce_keys [:total, :passed, :failed, :duration_ms, :results, :failed_notebooks]
-  defstruct [:total, :passed, :failed, :duration_ms, :results, :failed_notebooks]
+  @enforce_keys [:total, :passed, :failed, :duration_ms, :results, :failed_notebooks, :empty]
+  defstruct [:total, :passed, :failed, :duration_ms, :results, :failed_notebooks, :empty]
 
   @doc """
   Builds a report from a list of run results.
@@ -66,7 +67,8 @@ defmodule LivebookTest.Report do
       failed: failed,
       duration_ms: duration_ms,
       results: results,
-      failed_notebooks: failed_notebooks
+      failed_notebooks: failed_notebooks,
+      empty: results == []
     }
   end
 
@@ -87,45 +89,64 @@ defmodule LivebookTest.Report do
       true
   """
   @spec format(t()) :: String.t()
-  def format(%__MODULE__{} = report) do
-    lines = [
-      "",
-      "#{report.total} notebooks",
-      "#{report.passed} passed",
-      "#{report.failed} failed",
-      "Total time: #{format_duration(report.duration_ms)}",
-      ""
-    ]
+  def format(%__MODULE__{empty: true}) do
+    Enum.join(
+      [
+        "",
+        "0 notebooks found — nothing to test.",
+        "Check your paths and exclude patterns.",
+        ""
+      ],
+      "\n"
+    )
+  end
 
+  def format(%__MODULE__{} = report) do
     lines =
-      if report.failed > 0 do
-        lines ++ format_failures(report.failed_notebooks)
-      else
-        lines ++ ["All notebooks passed! ✅"]
-      end
+      [
+        "",
+        "#{report.total} notebooks",
+        "#{report.passed} passed",
+        "#{report.failed} failed",
+        "Total time: #{format_duration(report.duration_ms)}",
+        ""
+      ] ++ format_result_suffix(report)
 
     Enum.join(lines, "\n")
+  end
+
+  defp format_result_suffix(%__MODULE__{failed: 0}), do: ["All notebooks passed! ✅"]
+
+  defp format_result_suffix(%__MODULE__{failed_notebooks: failed_notebooks}) do
+    format_failures(failed_notebooks)
   end
 
   @doc """
   Returns the CI exit code for a report.
 
-  Returns `0` if all notebooks passed, `1` if any failed.
+  Returns `0` if all notebooks passed, `1` if any failed,
+  and `2` if no notebooks were discovered.
+
   Suitable for use in CI/CD pipelines.
 
   ## Examples
 
-      iex> report = %LivebookTest.Report{total: 1, passed: 1, failed: 0, duration_ms: 100, results: [], failed_notebooks: []}
+      iex> report = %LivebookTest.Report{total: 1, passed: 1, failed: 0, duration_ms: 100, results: [], failed_notebooks: [], empty: false}
       iex> LivebookTest.Report.exit_code(report)
       0
 
-      iex> report = %LivebookTest.Report{total: 1, passed: 0, failed: 1, duration_ms: 100, results: [], failed_notebooks: []}
+      iex> report = %LivebookTest.Report{total: 1, passed: 0, failed: 1, duration_ms: 100, results: [], failed_notebooks: [], empty: false}
       iex> LivebookTest.Report.exit_code(report)
       1
+
+      iex> report = %LivebookTest.Report{total: 0, passed: 0, failed: 0, duration_ms: 0, results: [], failed_notebooks: [], empty: true}
+      iex> LivebookTest.Report.exit_code(report)
+      2
   """
-  @spec exit_code(t()) :: 0 | 1
+  @spec exit_code(t()) :: 0 | 1 | 2
+  def exit_code(%__MODULE__{empty: true}), do: 2
   def exit_code(%__MODULE__{failed: 0}), do: 0
-  def exit_code(%__MODULE__{failed: _}), do: 1
+  def exit_code(%__MODULE__{}), do: 1
 
   @doc """
   Formats a report in verbose mode, including per-notebook details.

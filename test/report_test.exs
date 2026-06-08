@@ -67,7 +67,8 @@ defmodule LivebookTest.ReportTest do
         failed: 1,
         duration_ms: 500,
         results: [],
-        failed_notebooks: [make_result(exit_status: 1, stderr: "oops")]
+        failed_notebooks: [make_result(exit_status: 1, stderr: "oops")],
+        empty: false
       }
 
       output = Report.format(report)
@@ -83,7 +84,8 @@ defmodule LivebookTest.ReportTest do
         failed: 0,
         duration_ms: 100,
         results: [],
-        failed_notebooks: []
+        failed_notebooks: [],
+        empty: false
       }
 
       output = Report.format(report)
@@ -99,7 +101,8 @@ defmodule LivebookTest.ReportTest do
         results: [],
         failed_notebooks: [
           make_result(notebook_path: "fail.livemd", exit_status: 1, stderr: "boom")
-        ]
+        ],
+        empty: false
       }
 
       output = Report.format(report)
@@ -115,7 +118,8 @@ defmodule LivebookTest.ReportTest do
         results: [],
         failed_notebooks: [
           make_result(notebook_path: "fail.livemd", exit_status: 1, stderr: "")
-        ]
+        ],
+        empty: false
       }
 
       output = Report.format(report)
@@ -132,7 +136,8 @@ defmodule LivebookTest.ReportTest do
         failed: 0,
         duration_ms: 0,
         results: [],
-        failed_notebooks: []
+        failed_notebooks: [],
+        empty: false
       }
 
       assert Report.exit_code(report) == 0
@@ -145,10 +150,43 @@ defmodule LivebookTest.ReportTest do
         failed: 1,
         duration_ms: 0,
         results: [],
-        failed_notebooks: []
+        failed_notebooks: [],
+        empty: false
       }
 
       assert Report.exit_code(report) == 1
+    end
+
+    test "returns 2 when no notebooks discovered" do
+      report = %Report{
+        total: 0,
+        passed: 0,
+        failed: 0,
+        duration_ms: 0,
+        results: [],
+        failed_notebooks: [],
+        empty: true
+      }
+
+      assert Report.exit_code(report) == 2
+    end
+  end
+
+  describe "format/1 with empty discovery" do
+    test "warns about empty discovery" do
+      report = %Report{
+        total: 0,
+        passed: 0,
+        failed: 0,
+        duration_ms: 0,
+        results: [],
+        failed_notebooks: [],
+        empty: true
+      }
+
+      output = Report.format(report)
+      assert String.contains?(output, "0 notebooks found")
+      assert String.contains?(output, "nothing to test")
     end
   end
 

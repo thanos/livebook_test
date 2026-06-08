@@ -26,8 +26,8 @@ defmodule LivebookTest.Config do
   @typedoc "Dependency resolution mode"
   @type dependency_mode :: :remote | :local
 
-  @typedoc "Local dependency specification: maps package names to filesystem paths"
-  @type local_deps :: %{atom() => String.t()} | keyword()
+  @typedoc "Local dependency specification: keyword list mapping package names to filesystem paths"
+  @type local_deps :: keyword()
 
   @typedoc "Resolved configuration"
   @type t :: %__MODULE__{

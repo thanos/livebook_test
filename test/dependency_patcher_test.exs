@@ -24,6 +24,29 @@ defmodule LivebookTest.DependencyPatcherTest do
       refute String.contains?(patched, "~> 0.5")
     end
 
+    test "patches >= version specifier" do
+      script = "Mix.install([{:ex_arrow, \">= 0.5.0\"}])"
+      patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
+
+      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      refute String.contains?(patched, ">=")
+    end
+
+    test "patches == version specifier" do
+      script = "Mix.install([{:ex_arrow, \"== 1.2.3\"}])"
+      patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
+
+      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      refute String.contains?(patched, "==")
+    end
+
+    test "patches exact version specifier" do
+      script = "Mix.install([{:ex_arrow, \"1.2.3\"}])"
+      patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
+
+      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+    end
+
     test "patches multiple dependencies" do
       script = "Mix.install([{:ex_arrow, \"~> 0.5\"}, {:ex_datalog, \"~> 1.0\"}])"
 

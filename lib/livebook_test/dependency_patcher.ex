@@ -29,7 +29,7 @@ defmodule LivebookTest.DependencyPatcher do
   ## How patching works
 
   The patcher operates on the **exported Elixir script** (not the `.livemd`),
-  using regex-based AST-aware replacement to rewrite `Mix.install` calls:
+  using regex-based replacement to rewrite `Mix.install` calls:
 
       # Before (remote)
       Mix.install([{:my_lib, "~> 0.5"}])
@@ -69,6 +69,10 @@ defmodule LivebookTest.DependencyPatcher do
     patch_local(script, local_deps)
   end
 
+  def patch(script, :local, local_deps) when is_binary(script) and is_map(local_deps) do
+    patch_local(script, Enum.to_list(local_deps))
+  end
+
   defp patch_local(script, local_deps) do
     Enum.reduce(local_deps, script, fn {dep_name, dep_path}, acc ->
       patch_single_dep(acc, dep_name, dep_path)
@@ -86,14 +90,14 @@ defmodule LivebookTest.DependencyPatcher do
 
   defp patch_dep_with_opts(script, dep_name, replacement) do
     pattern =
-      Regex.compile!("\\{:(?:#{Regex.escape(dep_name)}),\\s*\"~>\\s*[^\"]+\",\\s*[^}]+\\}")
+      Regex.compile!("\\{:(?:#{Regex.escape(dep_name)}),\\s*\"[^\"]+\",\\s*[^}]+\\}")
 
     Regex.replace(pattern, script, replacement)
   end
 
   defp patch_simple_dep(script, dep_name, replacement) do
     pattern =
-      Regex.compile!("\\{:(?:#{Regex.escape(dep_name)}),\\s*\"~>\\s*[^\"]+\"\\}")
+      Regex.compile!("\\{:(?:#{Regex.escape(dep_name)}),\\s*\"[^\"]+\"\\}")
 
     Regex.replace(pattern, script, replacement)
   end
