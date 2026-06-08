@@ -4,6 +4,12 @@
 
 `livebook_test` brings `mix test`-style workflows to Livebook notebooks. It discovers `.livemd` files, converts them to executable Elixir scripts, runs them, and reports failures — locally and in CI/CD.
 
+[![CI](https://github.com/thanos/livebook_test/actions/workflows/ci.yml/badge.svg)](https://github.com/thanos/livebook_test/actions/workflows/ci.yml)
+[![Hex version](https://img.shields.io/hexpm/v/livebook_test.svg)](https://hex.pm/packages/livebook_test)
+[![Hex docs](https://img.shields.io/badge/docs-hexdocs.pm-blue)](https://hexdocs.pm/livebook_test)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Coverage Status](https://coveralls.io/repos/github/thanos/livebook_test/badge.svg?branch=main)](https://coveralls.io/github/thanos/livebook_test?branch=main)
+
 ## Why?
 
 Livebook notebooks are great for examples, tutorials, and interactive documentation. But they drift:
