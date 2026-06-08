@@ -1,0 +1,22 @@
+# Broken Notebook
+
+This notebook **intentionally fails**. Use it to verify that
+`mix livebook.test` correctly detects and reports failures.
+
+## A Cell That Raises
+
+```elixir
+raise "This notebook is intentionally broken!"
+```
+
+## A Cell With a Compile Error
+
+```elixir
+1 + 
+```
+
+## A Cell That Calls a Non-Existent Function
+
+```elixir
+NonExistentModule.does_not_exist()
+```

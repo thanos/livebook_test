@@ -1,0 +1,23 @@
+# Local Dependency Notebook
+
+This notebook demonstrates the local dependency patching feature.
+
+## Setup
+
+When run with `--mode remote`, this notebook uses the published Hex package:
+
+```elixir
+Mix.install([
+  {:jason, "~> 1.4"}
+])
+```
+
+When run with `--mode local` and configured local_deps,
+the version specifier is rewritten to a local path.
+
+## Use Dependency
+
+```elixir
+json = Jason.encode!(%{hello: "from local dep notebook"})
+IO.puts(json)
+```

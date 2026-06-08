@@ -1,0 +1,21 @@
+# Mix.install Notebook
+
+## Setup
+
+```elixir
+Mix.install([
+  {:jason, "~> 1.4"}
+])
+```
+
+## Use Dependency
+
+```elixir
+json = Jason.encode!(%{hello: "world"})
+IO.puts(json)
+```
+
+```elixir
+{:ok, data} = Jason.decode(json)
+IO.inspect(data, label: "Decoded")
+```

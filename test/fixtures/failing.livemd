@@ -1,0 +1,7 @@
+# Failing Notebook
+
+## This Will Fail
+
+```elixir
+raise "Intentional failure for testing"
+```

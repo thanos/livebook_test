@@ -1,0 +1,14 @@
+# Basic Notebook
+
+## Hello World
+
+```elixir
+IO.puts("Hello from LivebookTest!")
+```
+
+## Simple Arithmetic
+
+```elixir
+result = 2 + 2
+IO.inspect(result, label: "2 + 2")
+```
