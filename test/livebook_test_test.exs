@@ -77,6 +77,31 @@ defmodule LivebookTestTest do
       assert report.total == 1
       assert report.failed == 1
     end
+
+    test "passes correct script pairs and timeout to runner" do
+      mock_result = %Runner{
+        notebook_path: "test.livemd",
+        script_path: "test.exs",
+        exit_status: 0,
+        stdout: "ok",
+        stderr: "",
+        duration_ms: 50,
+        timed_out: false
+      }
+
+      LivebookTest.MockRunner
+      |> Mox.expect(:run_all, fn pairs, opts ->
+        assert Enum.all?(pairs, fn {nb, script} ->
+                 is_binary(nb) and is_binary(script)
+               end)
+
+        assert Keyword.get(opts, :timeout) == 60_000
+        [mock_result]
+      end)
+
+      config = Config.resolve(paths: ["examples/basic.livemd"], timeout: 60_000)
+      LivebookTest.run_with_config(config, runner: LivebookTest.MockRunner)
+    end
   end
 
   describe "run_and_report/1" do

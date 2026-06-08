@@ -70,6 +70,16 @@ defmodule LivebookTest.DependencyPatcherTest do
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
       assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      refute String.contains?(patched, "~> 0.5")
+      refute String.contains?(patched, "only:")
+    end
+
+    test "patches dependencies with repo option" do
+      script = "Mix.install([{:ex_arrow, \"~> 0.5\", repo: \"hexpm\"}])"
+      patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
+
+      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      refute String.contains?(patched, "hexpm")
     end
 
     test "handles empty local_deps" do
@@ -91,6 +101,24 @@ defmodule LivebookTest.DependencyPatcherTest do
       assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
       assert String.contains?(patched, "IO.puts(\"hello\")")
       assert String.contains?(patched, "# Header")
+    end
+
+    test "accepts map local_deps" do
+      script = "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
+      patched = DependencyPatcher.patch(script, :local, %{ex_arrow: "."})
+
+      assert String.contains?(patched, "path: \".\"")
+    end
+  end
+
+  describe "patch/3 with edge cases" do
+    test "returns script unchanged for empty string" do
+      assert DependencyPatcher.patch("", :local, []) == ""
+    end
+
+    test "returns script unchanged when no Mix.install present" do
+      script = "IO.puts(:hello)"
+      assert DependencyPatcher.patch(script, :local, ex_arrow: ".") == script
     end
   end
 end
