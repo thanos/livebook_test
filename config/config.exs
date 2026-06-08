@@ -1,5 +1,8 @@
 import Config
 
+# Livebook requires these Endpoint/PubSub/Bandit configs to compile,
+# even though livebook_test only calls the pure Livebook.live_markdown_to_elixir/1
+# function and never starts the Livebook application at runtime.
 config :livebook, LivebookWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost", path: "/"],

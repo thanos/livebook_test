@@ -12,7 +12,7 @@ defmodule LivebookTest do
   Add to your Mix project:
 
       def deps do
-        [{:livebook_test, "~> 0.1.0", only: [:dev, :test]}]
+        [{:livebook_test, "~> 0.1.0", only: [:dev, :test], runtime: false}]
       end
 
   Run:

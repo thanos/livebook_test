@@ -42,7 +42,6 @@ defmodule LivebookTest.MixProject do
     [
       {:livebook, "~> 0.19.0", runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
-      {:jason, "~> 1.4", optional: true},
       {:credo, "~> 1.7.17", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
       {:mox, "~> 1.2", only: :test}
@@ -86,7 +85,8 @@ defmodule LivebookTest.MixProject do
         "GitHub" => @source_url,
         "HexDocs" => "https://hexdocs.pm/livebook_test"
       },
-      files: ~w(lib mix.exs README.md LICENSE CHANGELOG.md)
+      files:
+        ~w(lib mix.exs README.md LICENSE CHANGELOG.md CODE_OF_CONDUCT.md CONTRIBUTING.md docs)
     ]
   end
 

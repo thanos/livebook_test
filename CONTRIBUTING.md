@@ -9,7 +9,7 @@ code changes.
 1. Fork the repository
 2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/livebook_test.git`
 3. Install dependencies: `mix deps.get`
-4. Run tests: `mix test`
+4. Run tests: `mix test --exclude livebook_integration`
 5. Run Livebook tests: `mix livebook.test`
 
 ## Development Workflow
@@ -18,11 +18,12 @@ code changes.
 2. Make your changes
 3. Ensure all checks pass:
 
-   ```bash
-   mix format --check-formatted
-   mix compile --warnings-as-errors
-   mix test
-   ```
+    ```bash
+    mix format --check-formatted
+    mix compile --warnings-as-errors
+    mix test --exclude livebook_integration
+    mix credo
+    ```
 
 4. Commit with a clear message
 5. Push and open a pull request

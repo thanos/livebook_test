@@ -74,22 +74,7 @@ defmodule LivebookTest.Config do
     }
   end
 
-  @doc """
-  Resolves configuration from CLI option tuples.
-
-  Accepts the option list parsed by `OptionParser` and merges
-  with application environment and defaults.
-
-  ## Examples
-
-      iex> config = LivebookTest.Config.from_cli([mode: "local", timeout: "120"])
-      iex> config.dependency_mode
-      :local
-
-      iex> config = LivebookTest.Config.from_cli([verbose: true])
-      iex> config.verbose
-      true
-  """
+  @doc false
   @spec from_cli(keyword()) :: t()
   def from_cli(cli_opts) do
     overrides =
