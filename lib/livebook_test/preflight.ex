@@ -73,16 +73,16 @@ defmodule LivebookTest.Preflight do
     |> String.trim()
   end
 
-  @spec check_elixir() :: result()
-  def check_elixir do
-    current = System.version()
+  @spec check_elixir(String.t()) :: result()
+  def check_elixir(version \\ System.version())
 
-    if Version.match?(current, ">= #{@min_elixir_version}") do
+  def check_elixir(version) do
+    if Version.match?(version, ">= #{@min_elixir_version}") do
       :ok
     else
       {:error,
        """
-       Unsupported Elixir version: #{current}.
+       Unsupported Elixir version: #{version}.
 
        livebook_test requires Elixir #{@min_elixir_version} or later.
        This project declares `elixir: "~> 1.18"` in mix.exs.
@@ -90,15 +90,10 @@ defmodule LivebookTest.Preflight do
     end
   end
 
-  @spec check_otp() :: result()
-  def check_otp do
-    otp_release =
-      case :erlang.system_info(:otp_release) do
-        release when is_binary(release) -> String.to_integer(release)
-        release when is_integer(release) -> release
-        release -> release |> to_string() |> String.to_integer()
-      end
+  @spec check_otp(non_neg_integer()) :: result()
+  def check_otp(otp_release \\ current_otp_release())
 
+  def check_otp(otp_release) do
     if otp_release in @supported_otp_versions do
       :ok
     else
@@ -112,25 +107,10 @@ defmodule LivebookTest.Preflight do
     end
   end
 
-  @spec check_livebook() :: result()
-  def check_livebook do
-    cond do
-      not Code.ensure_loaded?(Livebook) ->
-        {:error, livebook_unavailable_message()}
-
-      not function_exported?(Livebook, @livebook_export_function, 1) ->
-        {:error, livebook_incompatible_message(:missing_export)}
-
-      not livebook_version_supported?() ->
-        {:error, livebook_incompatible_message(:version)}
-
-      true ->
-        :ok
-    end
-  end
-
-  defp livebook_version_supported? do
-    case Application.spec(:livebook, :vsn) do
+  @doc false
+  @spec supports_livebook_version?(term()) :: boolean()
+  def supports_livebook_version?(vsn) do
+    case vsn do
       nil ->
         false
 
@@ -142,6 +122,55 @@ defmodule LivebookTest.Preflight do
     end
   rescue
     _ -> false
+  end
+
+  defp current_otp_release do
+    parse_otp_release(:erlang.system_info(:otp_release))
+  end
+
+  @doc false
+  @spec parse_otp_release(term()) :: non_neg_integer()
+  def parse_otp_release(release) do
+    case release do
+      release when is_binary(release) -> String.to_integer(release)
+      release when is_integer(release) -> release
+      release -> release |> to_string() |> String.to_integer()
+    end
+  end
+
+  defp livebook_application_version do
+    Application.get_env(:livebook_test, :livebook_version_override) ||
+      Application.spec(:livebook, :vsn)
+  end
+
+  @spec check_livebook() :: result()
+  def check_livebook do
+    case Application.get_env(:livebook_test, :livebook_preflight_override) do
+      :unavailable ->
+        {:error, livebook_unavailable_message()}
+
+      :missing_export ->
+        {:error, livebook_incompatible_message(:missing_export)}
+
+      _ ->
+        check_livebook_loaded()
+    end
+  end
+
+  defp check_livebook_loaded do
+    cond do
+      not Code.ensure_loaded?(Livebook) ->
+        {:error, livebook_unavailable_message()}
+
+      not function_exported?(Livebook, @livebook_export_function, 1) ->
+        {:error, livebook_incompatible_message(:missing_export)}
+
+      not supports_livebook_version?(livebook_application_version()) ->
+        {:error, livebook_incompatible_message(:version)}
+
+      true ->
+        :ok
+    end
   end
 
   defp livebook_unavailable_message do
@@ -168,17 +197,28 @@ defmodule LivebookTest.Preflight do
   end
 
   defp livebook_incompatible_message(:version) do
-    installed =
-      case Application.spec(:livebook, :vsn) do
-        nil -> "unknown"
-        vsn -> to_string(vsn)
-      end
+    livebook_incompatible_message(:version, installed_livebook_version())
+  end
 
+  @doc false
+  @spec incompatible_version_message(String.t()) :: String.t()
+  def incompatible_version_message(installed) do
+    livebook_incompatible_message(:version, installed)
+  end
+
+  defp livebook_incompatible_message(:version, installed) do
     """
       Incompatible Livebook version: #{installed}.
 
       livebook_test requires Livebook ~> #{@required_livebook_version}.
     """
+  end
+
+  defp installed_livebook_version do
+    case Application.spec(:livebook, :vsn) do
+      nil -> "unknown"
+      vsn -> to_string(vsn)
+    end
   end
 
   defp troubleshooting_hint do

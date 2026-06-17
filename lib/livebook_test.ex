@@ -135,7 +135,7 @@ defmodule LivebookTest do
   defp export_notebooks(notebooks, config) do
     notebooks
     |> Enum.map(fn notebook_path ->
-      case LivebookTest.Exporter.to_temp_file(notebook_path) do
+      case exporter_module().to_temp_file(notebook_path) do
         {:ok, script_path} ->
           {notebook_path, script_path}
 
@@ -187,6 +187,10 @@ defmodule LivebookTest do
     Enum.each(script_pairs, fn {_notebook_path, script_path} ->
       File.rm(script_path)
     end)
+  end
+
+  defp exporter_module do
+    Application.get_env(:livebook_test, :exporter_module, LivebookTest.Exporter)
   end
 
   @doc """
