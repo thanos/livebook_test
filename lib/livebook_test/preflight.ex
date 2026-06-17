@@ -40,7 +40,7 @@ defmodule LivebookTest.Preflight do
   def check do
     with :ok <- check_elixir(),
          :ok <- check_otp() do
-          check_livebook()
+      check_livebook()
     end
   end
 
