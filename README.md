@@ -38,6 +38,20 @@ Then fetch dependencies:
 mix deps.get
 ```
 
+## Supported Versions
+
+`livebook_test` depends on compiling Livebook as a Mix dependency. This works on tested combinations but can be fragile on others.
+
+| Component | Supported |
+|-----------|-----------|
+| Elixir | `~> 1.18` (1.18.0 and later) |
+| OTP | 26, 27, 28 |
+| Livebook | `~> 0.19.0` |
+
+`mix livebook.test` runs preflight checks and reports actionable errors when versions are unsupported or Livebook is unavailable.
+
+Livebook is officially distributed as a CLI tool and is not fully supported as a Mix dependency. If Livebook fails to compile in your project, see [Troubleshooting](#troubleshooting) and [Kino limitations](docs/guides/kino_limitations.md).
+
 ## Quick Start
 
 ```bash
@@ -115,7 +129,13 @@ config :livebook_test,
   ]
 ```
 
-Now `{:my_lib, "~> 0.5"}` becomes `{:my_lib, path: "."}`.
+Now `{:my_lib, "~> 0.5"}` becomes `{:my_lib, path: "/abs/path/to/project"}`.
+
+Path-style dependencies are also rewritten in local mode:
+
+```elixir
+Mix.install([{:my_lib, path: Path.join(__DIR__, "..")}])
+```
 
 Or via CLI:
 
@@ -214,13 +234,50 @@ Failed notebooks:
 | `LivebookTest.Discovery` | Notebook file discovery |
 | `LivebookTest.Exporter` | `.livemd` → `.exs` conversion |
 | `LivebookTest.DependencyPatcher` | Mix.install dependency rewriting |
+| `LivebookTest.Preflight` | Elixir/OTP/Livebook compatibility checks |
 | `LivebookTest.Runner` | Script execution and result collection |
 | `LivebookTest.Report` | Summary formatting and exit codes |
+
+## Kino and Interactive Notebooks
+
+Notebooks with Kino widgets, smart cells, or user inputs often fail when exported to headless scripts. See [Kino limitations](docs/guides/kino_limitations.md) for strategies.
+
+## Troubleshooting
+
+### Livebook fails to compile
+
+```
+** (Mix) Could not compile dependency :livebook
+```
+
+Livebook pulls in Phoenix, Bandit, and other heavy dependencies. Compilation failures are common on untested Elixir/OTP pairs.
+
+1. Verify you are on Elixir 1.18+ and OTP 26/27/28
+2. Run `mix deps.get && mix compile` and inspect the Livebook error
+3. Pin `{:livebook, "~> 0.19.0", runtime: false}` explicitly
+4. Check for conflicting Phoenix or Bandit versions in your project
+
+### Preflight check failures
+
+When `mix livebook.test` fails before running notebooks, read the preflight message. It includes version requirements and next steps.
+
+### Notebook export errors
+
+Enable verbose mode to see which notebook failed export:
+
+```bash
+mix livebook.test --verbose
+```
+
+### Kino-related hangs or failures
+
+See [Kino limitations](docs/guides/kino_limitations.md). Exclude interactive notebooks from CI with `exclude` patterns.
 
 ## Roadmap
 
 | Version | Feature |
 |---------|---------|
+| v0.1.1 | Preflight checks, path dep patching, Kino docs |
 | v0.2.0 | Snapshot testing |
 | v0.3.0 | Parallel execution |
 | v0.4.0 | JUnit output |

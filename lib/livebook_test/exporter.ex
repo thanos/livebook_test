@@ -59,9 +59,34 @@ defmodule LivebookTest.Exporter do
   """
   @spec to_elixir_from_string(String.t()) :: export_result()
   def to_elixir_from_string(content) when is_binary(content) do
-    {:ok, Livebook.live_markdown_to_elixir(content)}
+    case LivebookTest.Preflight.check_livebook() do
+      :ok ->
+        converter = markdown_converter()
+        {:ok, converter.(content)}
+
+      {:error, message} ->
+        {:error, {:livebook_unavailable, message}}
+    end
   rescue
-    e -> {:error, {:export_failed, Exception.message(e)}}
+    e -> {:error, {:export_failed, export_failure_message(e)}}
+  end
+
+  defp markdown_converter do
+    Application.get_env(
+      :livebook_test,
+      :markdown_converter,
+      &Livebook.live_markdown_to_elixir/1
+    )
+  end
+
+  defp export_failure_message(exception) do
+    base = Exception.message(exception)
+
+    if String.contains?(base, "Livebook") or not Code.ensure_loaded?(Livebook) do
+      base <> "\n\n" <> LivebookTest.Preflight.format_error("Notebook export failed.")
+    else
+      base
+    end
   end
 
   @doc """
@@ -107,11 +132,15 @@ defmodule LivebookTest.Exporter do
     basename = Path.basename(source_name, ".livemd")
 
     temp_path =
-      Path.join(System.tmp_dir!(), "#{basename}_#{:erlang.unique_integer([:positive])}.exs")
+      Path.join(temp_dir(), "#{basename}_#{:erlang.unique_integer([:positive])}.exs")
 
     case File.write(temp_path, script) do
       :ok -> {:ok, temp_path}
       {:error, reason} -> {:error, {:write_failed, reason}}
     end
+  end
+
+  defp temp_dir do
+    Application.get_env(:livebook_test, :temp_dir, System.tmp_dir!())
   end
 end

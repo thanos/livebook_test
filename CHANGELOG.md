@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-06-17
+
+### Added
+
+- `LivebookTest.Preflight` — runtime checks for Elixir, OTP, and Livebook compatibility
+- Path dependency patching in `--mode local` (rewrites `path:` and `Path.join(__DIR__, ...)` deps to absolute paths)
+- Kino limitations guide (`docs/guides/kino_limitations.md`)
+- CI matrix runs `mix livebook.test` across supported Elixir/OTP versions
+- Documented supported versions: Elixir `~> 1.18`, OTP 26/27/28, Livebook `~> 0.19.0`
+
+### Changed
+
+- `DependencyPatcher` now expands local paths to absolute paths for stable CI execution
+- Export failures include troubleshooting hints when Livebook is unavailable or incompatible
+- `mix livebook.test` runs preflight checks before notebook discovery
+
 ## [0.1.0] - 2026-06-08
 
 ### Added
@@ -25,4 +41,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI workflow
 - Full ExUnit test suite
 
+[0.1.1]: https://github.com/thanos/livebook_test/releases/tag/v0.1.1
 [0.1.0]: https://github.com/thanos/livebook_test/releases/tag/v0.1.0

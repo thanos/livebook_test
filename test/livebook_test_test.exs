@@ -36,6 +36,19 @@ defmodule LivebookTestTest do
   end
 
   describe "run_with_config/2 with mock runner" do
+    test "skips preflight when disabled" do
+      LivebookTest.MockRunner
+      |> Mox.expect(:run_all, fn _pairs, _opts -> [] end)
+
+      config = Config.resolve(paths: ["nonexistent/**/*.livemd"])
+
+      assert %Report{empty: true} =
+               LivebookTest.run_with_config(config,
+                 runner: LivebookTest.MockRunner,
+                 preflight: false
+               )
+    end
+
     test "uses injected runner module" do
       mock_result = %Runner{
         notebook_path: "test.livemd",
@@ -101,6 +114,101 @@ defmodule LivebookTestTest do
 
       config = Config.resolve(paths: ["examples/basic.livemd"], timeout: 60_000)
       LivebookTest.run_with_config(config, runner: LivebookTest.MockRunner)
+    end
+  end
+
+  describe "run_with_config/2 verbose error logging" do
+    setup do
+      on_exit(fn ->
+        Application.delete_env(:livebook_test, :exporter_module)
+      end)
+
+      Application.put_env(:livebook_test, :exporter_module, LivebookTest.TestExporter)
+      :ok
+    end
+
+    test "logs export failures when verbose" do
+      path = Path.join(System.tmp_dir!(), "fail_export.livemd")
+      File.write!(path, "# noop\n")
+      on_exit(fn -> File.rm(path) end)
+
+      LivebookTest.MockRunner
+      |> Mox.expect(:run_all, fn pairs, _opts ->
+        assert pairs == []
+        []
+      end)
+
+      config = Config.resolve(paths: [path], verbose: true)
+
+      output =
+        ExUnit.CaptureIO.capture_io(fn ->
+          LivebookTest.run_with_config(config,
+            runner: LivebookTest.MockRunner,
+            preflight: false
+          )
+        end)
+
+      assert output =~ "Failed to export #{path}"
+    end
+
+    test "logs patch read failures when verbose" do
+      path = Path.join(System.tmp_dir!(), "fail_read.livemd")
+      File.write!(path, "# noop\n")
+      on_exit(fn -> File.rm(path) end)
+
+      LivebookTest.MockRunner
+      |> Mox.expect(:run_all, fn pairs, _opts ->
+        assert length(pairs) == 1
+        []
+      end)
+
+      config =
+        Config.resolve(
+          paths: [path],
+          dependency_mode: :local,
+          local_deps: [my_lib: "."],
+          verbose: true
+        )
+
+      output =
+        ExUnit.CaptureIO.capture_io(fn ->
+          LivebookTest.run_with_config(config,
+            runner: LivebookTest.MockRunner,
+            preflight: false
+          )
+        end)
+
+      assert output =~ "Failed to read script"
+    end
+
+    test "logs patch write failures when verbose" do
+      path = Path.join(System.tmp_dir!(), "fail_write.livemd")
+      File.write!(path, "# noop\n")
+      on_exit(fn -> File.rm(path) end)
+
+      LivebookTest.MockRunner
+      |> Mox.expect(:run_all, fn pairs, _opts ->
+        assert length(pairs) == 1
+        []
+      end)
+
+      config =
+        Config.resolve(
+          paths: [path],
+          dependency_mode: :local,
+          local_deps: [my_lib: "."],
+          verbose: true
+        )
+
+      output =
+        ExUnit.CaptureIO.capture_io(fn ->
+          LivebookTest.run_with_config(config,
+            runner: LivebookTest.MockRunner,
+            preflight: false
+          )
+        end)
+
+      assert output =~ "Failed to write patched script"
     end
   end
 

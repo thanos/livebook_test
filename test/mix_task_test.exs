@@ -64,6 +64,16 @@ defmodule Mix.Tasks.Livebook.TestTest do
       assert config.verbose == true
     end
 
+    test "parses mode as atom" do
+      config = LivebookTestTask.build_config_from_opts(mode: :local)
+      assert config.dependency_mode == :local
+    end
+
+    test "parses timeout as integer seconds" do
+      config = LivebookTestTask.build_config_from_opts(timeout: 90_000)
+      assert config.timeout == 90_000
+    end
+
     test "parses verbose: false" do
       config = LivebookTestTask.build_config_from_opts(verbose: false)
       assert config.verbose == false
@@ -131,6 +141,14 @@ defmodule Mix.Tasks.Livebook.TestTest do
         end)
 
       assert output =~ "Notebook execution details:"
+    end
+
+    test "raises on invalid CLI options" do
+      assert_raise Mix.Error, ~r/Invalid options provided/, fn ->
+        ExUnit.CaptureIO.capture_io(fn ->
+          LivebookTestTask.run(["--path", "examples/basic.livemd", "--verbose=not-a-boolean"])
+        end)
+      end
     end
   end
 end

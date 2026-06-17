@@ -1,7 +1,8 @@
 defmodule LivebookTest.ExporterTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias LivebookTest.Exporter
+  alias LivebookTest.TestSupport
 
   describe "to_elixir/1" do
     test "exports a valid notebook to Elixir script" do
@@ -55,19 +56,64 @@ defmodule LivebookTest.ExporterTest do
       on_exit(fn -> File.rm(path) end)
     end
 
-    test "returns write_failed error when File.write fails" do
-      content = "# Test\n\n```elixir\n1+1\n```"
+    test "returns write_failed error when temp directory is not writable" do
+      content = "# Test\n\n```elixir\n1 + 1\n```"
 
-      file_path =
-        Path.join(System.tmp_dir!(), "lt_readonly_#{:erlang.unique_integer([:positive])}.exs")
+      read_only_dir =
+        Path.join(System.tmp_dir!(), "lt_ro_#{:erlang.unique_integer([:positive])}")
 
-      :ok = File.write(file_path, "original")
-      on_exit(fn -> File.rm(file_path) end)
+      File.mkdir!(read_only_dir)
+      File.chmod!(read_only_dir, 0o555)
+      on_exit(fn -> File.chmod(read_only_dir, 0o755) && File.rm_rf(read_only_dir) end)
 
-      {:ok, path} = Exporter.to_temp_file_from_string(content)
-      assert String.ends_with?(path, ".exs")
-      assert File.exists?(path)
-      File.rm(path)
+      assert {:error, {:write_failed, :eacces}} =
+               TestSupport.with_env(:livebook_test, :temp_dir, read_only_dir, fn ->
+                 Exporter.to_temp_file_from_string(content)
+               end)
+    end
+
+    test "returns livebook_unavailable when Livebook is not loaded" do
+      content = "# Test\n\n```elixir\n1 + 1\n```"
+
+      assert {:error, {:livebook_unavailable, message}} =
+               TestSupport.with_env(
+                 :livebook_test,
+                 :livebook_preflight_override,
+                 :unavailable,
+                 fn ->
+                   Exporter.to_elixir_from_string(content)
+                 end
+               )
+
+      assert message =~ "Livebook is not available"
+    end
+
+    test "returns export_failed with troubleshooting when converter raises" do
+      content = "# Test\n\n```elixir\n1 + 1\n```"
+
+      converter = fn _content -> raise "Livebook parser exploded" end
+
+      assert {:error, {:export_failed, message}} =
+               TestSupport.with_env(:livebook_test, :markdown_converter, converter, fn ->
+                 Exporter.to_elixir_from_string(content)
+               end)
+
+      assert message =~ "Livebook parser exploded"
+      assert message =~ "Troubleshooting:"
+    end
+
+    test "returns export_failed without troubleshooting for generic errors" do
+      content = "# Test\n\n```elixir\n1 + 1\n```"
+
+      converter = fn _content -> raise "unexpected export failure" end
+
+      assert {:error, {:export_failed, message}} =
+               TestSupport.with_env(:livebook_test, :markdown_converter, converter, fn ->
+                 Exporter.to_elixir_from_string(content)
+               end)
+
+      assert message == "unexpected export failure"
+      refute message =~ "Troubleshooting:"
     end
   end
 end

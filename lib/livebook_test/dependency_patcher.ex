@@ -24,18 +24,25 @@ defmodule LivebookTest.DependencyPatcher do
   ## Modes
 
   - **Remote** (`:remote`) — leave the script untouched
-  - **Local** (`:local`) — rewrite Hex deps to local path deps
+  - **Local** (`:local`) — rewrite Hex deps and existing `path:` deps to
+    stable absolute paths from `local_deps`
 
   ## How patching works
 
   The patcher operates on the **exported Elixir script** (not the `.livemd`),
   using regex-based replacement to rewrite `Mix.install` calls:
 
-      # Before (remote)
+      # Hex dep — before (remote)
       Mix.install([{:my_lib, "~> 0.5"}])
 
-      # After (local)
-      Mix.install([{:my_lib, path: "."}])
+      # Hex dep — after (local)
+      Mix.install([{:my_lib, path: "/abs/path/to/project"}])
+
+      # Path dep — before
+      Mix.install([{:my_lib, path: Path.join(__DIR__, "..")}])
+
+      # Path dep — after (local, when my_lib is in local_deps)
+      Mix.install([{:my_lib, path: "/abs/path/to/project"}])
   """
 
   @typedoc "Patch mode matching LivebookTest.Config.dependency_mode()"
@@ -81,11 +88,14 @@ defmodule LivebookTest.DependencyPatcher do
 
   defp patch_single_dep(script, dep_name, dep_path) do
     dep_str = Atom.to_string(dep_name)
-    replacement = "{:#{dep_str}, path: #{inspect(dep_path)}}"
+    abs_path = Path.expand(dep_path)
+    replacement = "{:#{dep_str}, path: #{inspect(abs_path)}}"
 
     script
     |> patch_dep_with_opts(dep_str, replacement)
     |> patch_simple_dep(dep_str, replacement)
+    |> patch_quoted_path_dep(dep_str, replacement)
+    |> patch_path_join_dep(dep_str, replacement)
   end
 
   defp patch_dep_with_opts(script, dep_name, replacement) do
@@ -96,6 +106,22 @@ defmodule LivebookTest.DependencyPatcher do
 
   defp patch_simple_dep(script, dep_name, replacement) do
     pattern = Regex.compile!("\\{:#{Regex.escape(dep_name)},\\s*\"[^\"]+\"\\}")
+
+    Regex.replace(pattern, script, replacement)
+  end
+
+  defp patch_quoted_path_dep(script, dep_name, replacement) do
+    pattern =
+      Regex.compile!("\\{:#{Regex.escape(dep_name)},\\s*path:\\s*\"[^\"]*\"\\}")
+
+    Regex.replace(pattern, script, replacement)
+  end
+
+  defp patch_path_join_dep(script, dep_name, replacement) do
+    pattern =
+      Regex.compile!(
+        "\\{:#{Regex.escape(dep_name)},\\s*path:\\s*Path\\.join\\(__DIR__,\\s*\"[^\"]*\"\\)\\}"
+      )
 
     Regex.replace(pattern, script, replacement)
   end
