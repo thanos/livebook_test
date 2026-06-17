@@ -39,9 +39,8 @@ defmodule LivebookTest.Preflight do
   @spec check() :: result()
   def check do
     with :ok <- check_elixir(),
-         :ok <- check_otp(),
-         :ok <- check_livebook() do
-      :ok
+         :ok <- check_otp() do
+          check_livebook()
     end
   end
 
