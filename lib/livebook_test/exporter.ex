@@ -59,9 +59,25 @@ defmodule LivebookTest.Exporter do
   """
   @spec to_elixir_from_string(String.t()) :: export_result()
   def to_elixir_from_string(content) when is_binary(content) do
-    {:ok, Livebook.live_markdown_to_elixir(content)}
+    case LivebookTest.Preflight.check_livebook() do
+      :ok ->
+        {:ok, Livebook.live_markdown_to_elixir(content)}
+
+      {:error, message} ->
+        {:error, {:livebook_unavailable, message}}
+    end
   rescue
-    e -> {:error, {:export_failed, Exception.message(e)}}
+    e -> {:error, {:export_failed, export_failure_message(e)}}
+  end
+
+  defp export_failure_message(exception) do
+    base = Exception.message(exception)
+
+    if String.contains?(base, "Livebook") or not Code.ensure_loaded?(Livebook) do
+      base <> "\n\n" <> LivebookTest.Preflight.format_error("Notebook export failed.")
+    else
+      base
+    end
   end
 
   @doc """

@@ -27,8 +27,13 @@ defmodule Mix.Tasks.Livebook.Test do
   ## Exit codes
 
     - `0` — all notebooks passed
-    - `1` — one or more notebooks failed
+    - `1` — one or more notebooks failed (or preflight check failed)
     - `2` — no notebooks discovered
+
+  ## Preflight checks
+
+  Before discovery, the task verifies Elixir, OTP, and Livebook compatibility.
+  Unsupported environments fail fast with troubleshooting guidance.
 
   ## CI/CD integration
 
@@ -73,6 +78,8 @@ defmodule Mix.Tasks.Livebook.Test do
     end
 
     Mix.Task.run("app.start", [])
+
+    LivebookTest.Preflight.check!()
 
     config = build_config_from_opts(opts)
 

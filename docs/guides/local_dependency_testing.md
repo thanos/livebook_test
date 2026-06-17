@@ -31,10 +31,20 @@ Mix.install([{:my_lib, "~> 0.5"}])
 into:
 
 ```elixir
-Mix.install([{:my_lib, path: "."}])
+Mix.install([{:my_lib, path: "/abs/path/to/checkout"}])
 ```
 
-Now the notebook uses your current checkout.
+Path-style dependencies are rewritten the same way:
+
+```elixir
+# Before
+Mix.install([{:my_lib, path: Path.join(__DIR__, "..")}])
+
+# After (local mode, when my_lib is in local_deps)
+Mix.install([{:my_lib, path: "/abs/path/to/checkout"}])
+```
+
+Paths are expanded to absolute paths so CI runs behave consistently regardless of working directory.
 
 ## Configuration
 

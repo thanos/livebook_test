@@ -108,6 +108,11 @@ defmodule LivebookTest do
   """
   @spec run_with_config(LivebookTest.Config.t(), keyword()) :: LivebookTest.Report.t()
   def run_with_config(%LivebookTest.Config{} = config, opts \\ []) do
+    case Keyword.get(opts, :preflight, true) do
+      true -> LivebookTest.Preflight.check!()
+      false -> :ok
+    end
+
     runner_mod = Keyword.get(opts, :runner, LivebookTest.Runner)
     notebooks = LivebookTest.Discovery.find(config.paths, exclude: config.exclude)
 

@@ -1,7 +1,7 @@
 defmodule LivebookTest.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.1"
   @source_url "https://github.com/thanos/livebook_test"
 
   def project do
@@ -59,11 +59,12 @@ defmodule LivebookTest.MixProject do
         "docs/guides/why_test_livebooks.md",
         "docs/guides/cicd_for_livebook_notebooks.md",
         "docs/guides/local_dependency_testing.md",
+        "docs/guides/kino_limitations.md",
         "docs/guides/executable_documentation.md"
       ],
       extra_section: "Guides",
       groups_for_modules: [
-        Core: [LivebookTest, LivebookTest.Config],
+        Core: [LivebookTest, LivebookTest.Config, LivebookTest.Preflight],
         Pipeline: [
           LivebookTest.Discovery,
           LivebookTest.Exporter,

@@ -20,7 +20,7 @@ defmodule LivebookTest.DependencyPatcherTest do
       script = "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
-      assert String.contains?(patched, "path: \".\"")
+      assert String.contains?(patched, "path: #{inspect(Path.expand("."))}")
       refute String.contains?(patched, "~> 0.5")
     end
 
@@ -28,7 +28,7 @@ defmodule LivebookTest.DependencyPatcherTest do
       script = "Mix.install([{:ex_arrow, \">= 0.5.0\"}])"
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
-      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      assert String.contains?(patched, "{:ex_arrow, path: #{inspect(Path.expand("."))}}")
       refute String.contains?(patched, ">=")
     end
 
@@ -36,7 +36,7 @@ defmodule LivebookTest.DependencyPatcherTest do
       script = "Mix.install([{:ex_arrow, \"== 1.2.3\"}])"
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
-      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      assert String.contains?(patched, "{:ex_arrow, path: #{inspect(Path.expand("."))}}")
       refute String.contains?(patched, "==")
     end
 
@@ -44,7 +44,7 @@ defmodule LivebookTest.DependencyPatcherTest do
       script = "Mix.install([{:ex_arrow, \"1.2.3\"}])"
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
-      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      assert String.contains?(patched, "{:ex_arrow, path: #{inspect(Path.expand("."))}}")
     end
 
     test "patches multiple dependencies" do
@@ -53,15 +53,19 @@ defmodule LivebookTest.DependencyPatcherTest do
       patched =
         DependencyPatcher.patch(script, :local, ex_arrow: ".", ex_datalog: "../ex_datalog")
 
-      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
-      assert String.contains?(patched, "{:ex_datalog, path: \"../ex_datalog\"}")
+      assert String.contains?(patched, "{:ex_arrow, path: #{inspect(Path.expand("."))}}")
+
+      assert String.contains?(
+               patched,
+               "{:ex_datalog, path: #{inspect(Path.expand("../ex_datalog"))}}"
+             )
     end
 
     test "leaves unlisted dependencies unchanged" do
       script = "Mix.install([{:ex_arrow, \"~> 0.5\"}, {:other_lib, \"~> 2.0\"}])"
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
-      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      assert String.contains?(patched, "{:ex_arrow, path: #{inspect(Path.expand("."))}}")
       assert String.contains?(patched, "{:other_lib, \"~> 2.0\"}")
     end
 
@@ -69,7 +73,7 @@ defmodule LivebookTest.DependencyPatcherTest do
       script = "Mix.install([{:ex_arrow, \"~> 0.5\", only: :dev}])"
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
-      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      assert String.contains?(patched, "{:ex_arrow, path: #{inspect(Path.expand("."))}}")
       refute String.contains?(patched, "~> 0.5")
       refute String.contains?(patched, "only:")
     end
@@ -78,7 +82,7 @@ defmodule LivebookTest.DependencyPatcherTest do
       script = "Mix.install([{:ex_arrow, \"~> 0.5\", repo: \"hexpm\"}])"
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
-      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      assert String.contains?(patched, "{:ex_arrow, path: #{inspect(Path.expand("."))}}")
       refute String.contains?(patched, "hexpm")
     end
 
@@ -98,7 +102,7 @@ defmodule LivebookTest.DependencyPatcherTest do
 
       patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
 
-      assert String.contains?(patched, "{:ex_arrow, path: \".\"}")
+      assert String.contains?(patched, "{:ex_arrow, path: #{inspect(Path.expand("."))}}")
       assert String.contains?(patched, "IO.puts(\"hello\")")
       assert String.contains?(patched, "# Header")
     end
@@ -107,7 +111,28 @@ defmodule LivebookTest.DependencyPatcherTest do
       script = "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
       patched = DependencyPatcher.patch(script, :local, %{ex_arrow: "."})
 
-      assert String.contains?(patched, "path: \".\"")
+      assert String.contains?(patched, "path: #{inspect(Path.expand("."))}")
+    end
+
+    test "patches quoted path dependency to absolute local path" do
+      script = ~s|Mix.install([{:ex_arrow, path: "../ex_arrow"}])|
+      patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
+
+      assert patched == ~s|Mix.install([{:ex_arrow, path: "#{Path.expand(".")}"}])|
+    end
+
+    test "patches Path.join path dependency to absolute local path" do
+      script = ~s|Mix.install([{:ex_arrow, path: Path.join(__DIR__, "..")}])|
+      patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
+
+      assert patched == ~s|Mix.install([{:ex_arrow, path: "#{Path.expand(".")}"}])|
+    end
+
+    test "leaves path deps not listed in local_deps unchanged" do
+      script = ~s|Mix.install([{:other_lib, path: "../other"}])|
+      patched = DependencyPatcher.patch(script, :local, ex_arrow: ".")
+
+      assert patched == script
     end
   end
 
