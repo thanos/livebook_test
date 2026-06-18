@@ -23,8 +23,8 @@ defmodule LivebookTest.DependencyPatcher do
 
   ## Modes
 
-  - **Remote** (`:remote`) — leave the script untouched
-  - **Local** (`:local`) — rewrite Hex deps and existing `path:` deps to
+  - **Remote** (`:remote`) - leave the script untouched
+  - **Local** (`:local`) - rewrite Hex deps and existing `path:` deps to
     stable absolute paths from `local_deps`
 
   ## How patching works
@@ -32,16 +32,16 @@ defmodule LivebookTest.DependencyPatcher do
   The patcher operates on the **exported Elixir script** (not the `.livemd`),
   using regex-based replacement to rewrite `Mix.install` calls:
 
-      # Hex dep — before (remote)
+      # Hex dep - before (remote)
       Mix.install([{:my_lib, "~> 0.5"}])
 
-      # Hex dep — after (local)
+      # Hex dep - after (local)
       Mix.install([{:my_lib, path: "/abs/path/to/project"}])
 
-      # Path dep — before
+      # Path dep - before
       Mix.install([{:my_lib, path: Path.join(__DIR__, "..")}])
 
-      # Path dep — after (local, when my_lib is in local_deps)
+      # Path dep - after (local, when my_lib is in local_deps)
       Mix.install([{:my_lib, path: "/abs/path/to/project"}])
   """
 
@@ -60,11 +60,11 @@ defmodule LivebookTest.DependencyPatcher do
 
   ## Examples
 
-      iex> script = "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
+      iex> script = ~S|Mix.install([{:ex_arrow, "~> 0.5"}])|
       iex> LivebookTest.DependencyPatcher.patch(script, :remote, [])
-      "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
+      ~S|Mix.install([{:ex_arrow, "~> 0.5"}])|
 
-      iex> script = "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
+      iex> script = ~S|Mix.install([{:ex_arrow, "~> 0.5"}])|
       iex> patched = LivebookTest.DependencyPatcher.patch(script, :local, ex_arrow: ".")
       iex> String.contains?(patched, "path:")
       true

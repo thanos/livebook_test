@@ -46,7 +46,8 @@ defmodule LivebookTest.Runner do
           stdout: String.t(),
           stderr: String.t(),
           duration_ms: non_neg_integer(),
-          timed_out: boolean()
+          timed_out: boolean(),
+          harness_error: boolean()
         }
 
   @enforce_keys [
@@ -56,7 +57,8 @@ defmodule LivebookTest.Runner do
     :stdout,
     :stderr,
     :duration_ms,
-    :timed_out
+    :timed_out,
+    :harness_error
   ]
 
   defstruct [
@@ -66,7 +68,8 @@ defmodule LivebookTest.Runner do
     :stdout,
     :stderr,
     :duration_ms,
-    :timed_out
+    :timed_out,
+    harness_error: false
   ]
 
   @typedoc "Outcome of running a single script"
@@ -114,7 +117,8 @@ defmodule LivebookTest.Runner do
            stdout: output,
            stderr: "",
            duration_ms: duration_ms,
-           timed_out: false
+           timed_out: false,
+           harness_error: false
          }}
 
       nil ->
@@ -128,7 +132,8 @@ defmodule LivebookTest.Runner do
            stdout: "",
            stderr: "Execution timed out after #{timeout}ms",
            duration_ms: duration_ms,
-           timed_out: true
+           timed_out: true,
+           harness_error: false
          }}
     end
   rescue
@@ -168,11 +173,11 @@ defmodule LivebookTest.Runner do
 
   ## Examples
 
-      iex> result = %LivebookTest.Runner{notebook_path: "a.livemd", script_path: "a.exs", exit_status: 0, stdout: "", stderr: "", duration_ms: 100, timed_out: false}
+      iex> result = %LivebookTest.Runner{notebook_path: "a.livemd", script_path: "a.exs", exit_status: 0, stdout: "", stderr: "", duration_ms: 100, timed_out: false, harness_error: false}
       iex> LivebookTest.Runner.success?(result)
       true
 
-      iex> result = %LivebookTest.Runner{notebook_path: "a.livemd", script_path: "a.exs", exit_status: 1, stdout: "", stderr: "error", duration_ms: 100, timed_out: false}
+      iex> result = %LivebookTest.Runner{notebook_path: "a.livemd", script_path: "a.exs", exit_status: 1, stdout: "", stderr: "error", duration_ms: 100, timed_out: false, harness_error: false}
       iex> LivebookTest.Runner.success?(result)
       false
   """
@@ -188,7 +193,8 @@ defmodule LivebookTest.Runner do
       stdout: "",
       stderr: inspect(reason),
       duration_ms: 0,
-      timed_out: false
+      timed_out: false,
+      harness_error: true
     }
   end
 end

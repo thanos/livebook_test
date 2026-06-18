@@ -4,6 +4,8 @@ defmodule LivebookTest.PreflightTest do
   alias LivebookTest.Preflight
   alias LivebookTest.TestSupport
 
+  doctest Preflight, only: [check: 0]
+
   describe "check/0" do
     test "returns :ok in supported environment" do
       assert Preflight.check() == :ok

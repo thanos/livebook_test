@@ -1,6 +1,6 @@
 # Why Test Livebooks?
 
-Livebook notebooks are a powerful way to share Elixir knowledge, but they share a common problem with all documentation: **they drift from reality**.
+Livebook notebooks are a practical way to share Elixir knowledge, but they share a common problem with all documentation: **they drift from reality**.
 
 ## The Documentation Drift Problem
 

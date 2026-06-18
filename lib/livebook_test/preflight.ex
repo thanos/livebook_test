@@ -13,8 +13,8 @@ defmodule LivebookTest.Preflight do
   | OTP       | 26, 27, or 28 |
   | Livebook  | `~> 0.19.0` with `live_markdown_to_elixir/1` |
 
-  Livebook is pulled in as a Mix dependency. If your project cannot compile
-  Livebook, see the troubleshooting section in the README.
+  Livebook is a transitive dependency of `livebook_test`. If `:livebook`
+  fails to compile in your project, see the troubleshooting section in the README.
   """
 
   @min_elixir_version "1.18.0"
@@ -177,13 +177,13 @@ defmodule LivebookTest.Preflight do
     """
     Livebook is not available.
 
-    livebook_test depends on the `livebook` Hex package to export notebooks
-    via `Livebook.live_markdown_to_elixir/1`. Your project must compile
-    Livebook successfully before running notebook tests.
+    livebook_test depends on the `livebook` Hex package (pulled in transitively)
+    to export notebooks via `Livebook.live_markdown_to_elixir/1`. Your project
+    must compile that dependency before running notebook tests.
 
-    If Livebook fails to compile in your project, this is a known limitation:
-    Livebook is officially distributed as a CLI tool and is not fully supported
-    as a Mix dependency across all Elixir/OTP combinations.
+    Livebook upstream documents their Hex package primarily as a CLI. Using it
+    as a library dependency (as livebook_test does) can fail on some Elixir/OTP
+    combinations or in projects with conflicting deps.
     """
   end
 

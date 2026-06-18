@@ -14,7 +14,6 @@ defmodule LivebookTest.MixProject do
       docs: docs(),
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      aliases: aliases(),
       test_coverage: [tool: ExCoveralls]
     ]
   end
@@ -33,9 +32,7 @@ defmodule LivebookTest.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    []
   end
 
   defp deps do
@@ -90,9 +87,5 @@ defmodule LivebookTest.MixProject do
       files:
         ~w(lib mix.exs README.md LICENSE CHANGELOG.md CODE_OF_CONDUCT.md CONTRIBUTING.md docs)
     ]
-  end
-
-  defp aliases do
-    []
   end
 end

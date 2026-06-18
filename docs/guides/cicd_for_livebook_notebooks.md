@@ -44,9 +44,9 @@ jobs:
 
 `mix livebook.test` exits with:
 
-- **0** — all notebooks passed
-- **1** — one or more notebooks failed
-- **2** — no notebooks discovered (check your paths and exclude patterns)
+- **0** - all notebooks passed
+- **1** - one or more notebooks failed
+- **2** - no notebooks discovered (check your paths and exclude patterns)
 
 This matches standard CI expectations.
 

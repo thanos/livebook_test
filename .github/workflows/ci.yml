@@ -101,5 +101,5 @@ jobs:
       - name: Run Livebook tests (remote)
         run: mix livebook.test --mode remote
 
-      - name: Run Livebook tests (local)
-        run: mix livebook.test --mode local
+      - name: Run Livebook tests (local mode, jason patching)
+        run: mix livebook.test --mode local --path livebooks/local_dep.livemd

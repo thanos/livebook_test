@@ -4,6 +4,8 @@ defmodule LivebookTest.ExporterTest do
   alias LivebookTest.Exporter
   alias LivebookTest.TestSupport
 
+  doctest Exporter, except: [to_temp_file: 1, to_temp_file_from_string: 1]
+
   describe "to_elixir/1" do
     test "exports a valid notebook to Elixir script" do
       {:ok, script} = Exporter.to_elixir("examples/basic.livemd")

@@ -41,7 +41,7 @@ Notebooks used as executable documentation should:
 
 ### Structure for Testability
 
-```markdown
+````markdown
 # My Feature Guide
 
 ## Setup
@@ -61,15 +61,16 @@ MyLib.hello("world") |> IO.puts()
 ```elixir
 MyLib.configure(option: :value)
 ```
-```
+````
 
 ### Separate Interactive from Testable
 
 Some Livebook features (inputs, smart cells, Kino widgets) are interactive and won't work in a headless test. Keep interactive elements in dedicated "demo" notebooks, separate from the "testable" documentation notebooks.
 
-## Integration with Documentation Generators
+## Including Notebooks in ExDoc
 
-`livebook_test` integrates with ExDoc. Include your notebooks in the `extras` section of `mix.exs`:
+Livebook `.livemd` files can be included in ExDoc's `extras` independently of
+`livebook_test`. Add them to `mix.exs`:
 
 ```elixir
 docs: [

@@ -12,7 +12,7 @@ defmodule LivebookTest do
   Add to your Mix project:
 
       def deps do
-        [{:livebook_test, "~> 0.1.0", only: [:dev, :test], runtime: false}]
+        [{:livebook_test, "~> 0.1", only: [:dev, :test], runtime: false}]
       end
 
   Run:
@@ -60,6 +60,8 @@ defmodule LivebookTest do
           | {:timeout, non_neg_integer()}
           | {:local_deps, LivebookTest.Config.local_deps()}
           | {:verbose, boolean()}
+          | {:runner, module()}
+          | {:preflight, boolean()}
 
   @typedoc "Result of a complete test run"
   @type run_result :: {LivebookTest.Config.t(), LivebookTest.Report.t()}
@@ -78,6 +80,8 @@ defmodule LivebookTest do
     - `:timeout` - per-notebook timeout in milliseconds
     - `:local_deps` - dependency name → path mapping
     - `:verbose` - enable verbose output
+    - `:runner` - runner module (default `LivebookTest.Runner`; for test injection)
+    - `:preflight` - run environment checks before discovery (default `true`)
 
   ## Examples
 
@@ -87,10 +91,11 @@ defmodule LivebookTest do
   """
   @spec run([run_option()]) :: run_result()
   def run(opts \\ []) do
-    overrides = build_overrides(opts)
+    {run_opts, config_opts} = split_run_opts(opts)
+    overrides = build_overrides(config_opts)
     config = LivebookTest.Config.resolve(overrides)
 
-    {config, run_with_config(config)}
+    {config, run_with_config(config, run_opts)}
   end
 
   @doc """
@@ -98,6 +103,11 @@ defmodule LivebookTest do
 
   Useful when you need fine-grained control over configuration
   before running.
+
+  ## Options
+
+    - `:runner` - runner module (default `LivebookTest.Runner`)
+    - `:preflight` - run environment checks (default `true`; set `false` in tests)
 
   ## Examples
 
@@ -164,7 +174,7 @@ defmodule LivebookTest do
         patched =
           LivebookTest.DependencyPatcher.patch(script_content, :local, config.local_deps)
 
-        case File.write(script_path, patched) do
+        case write_patched_script(script_path, patched) do
           :ok ->
             {notebook_path, script_path}
 
@@ -193,11 +203,16 @@ defmodule LivebookTest do
     Application.get_env(:livebook_test, :exporter_module, LivebookTest.Exporter)
   end
 
+  defp write_patched_script(script_path, patched) do
+    writer = Application.get_env(:livebook_test, :patch_writer, &File.write/2)
+    writer.(script_path, patched)
+  end
+
   @doc """
   Convenience function that runs the pipeline and prints the report.
 
-  Returns the exit code (0 for success, 1 for failure) suitable
-  for CI/CD use.
+  Returns the exit code: `0` when all notebooks pass, `1` when any fail,
+  and `2` when no notebooks are discovered.
 
   ## Examples
 
@@ -228,6 +243,11 @@ defmodule LivebookTest do
     |> maybe_put(opts, :local_deps, :local_deps)
     |> maybe_put(opts, :exclude, :exclude)
     |> maybe_put(opts, :verbose, :verbose)
+  end
+
+  defp split_run_opts(opts) do
+    run_keys = [:runner, :preflight]
+    {Keyword.take(opts, run_keys), Keyword.drop(opts, run_keys)}
   end
 
   defp maybe_put(overrides, opts, source_key, dest_key) do

@@ -1,6 +1,6 @@
 # Local Dependency Testing
 
-The most powerful feature of `livebook_test` is the ability to test notebooks against your **current codebase** instead of published packages.
+A core feature of `livebook_test` is testing notebooks against your **current codebase** instead of published packages.
 
 ## The Problem
 
