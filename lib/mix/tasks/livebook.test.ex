@@ -3,7 +3,7 @@ defmodule Mix.Tasks.Livebook.Test do
   Runs Livebook notebooks as tests.
 
   This task discovers `.livemd` files, converts them to Elixir
-  scripts, executes them, and reports results — similar to
+  scripts, executes them, and reports results, similar to
   `mix test` but for Livebook notebooks.
 
   ## Usage
@@ -18,17 +18,17 @@ defmodule Mix.Tasks.Livebook.Test do
 
   ## Options
 
-    - `--path` — glob pattern for notebook discovery (can be repeated)
-    - `--exclude` — glob pattern to exclude from discovery (can be repeated)
-    - `--mode` — dependency mode: `local` or `remote` (default: from config)
-    - `--timeout` — per-notebook timeout in seconds (default: from config)
-    - `--verbose` — enable verbose output with per-notebook details
+    - `--path` - glob pattern for notebook discovery (can be repeated)
+    - `--exclude` - glob pattern to exclude from discovery (can be repeated)
+    - `--mode` - dependency mode: `local` or `remote` (default: from config)
+    - `--timeout` - per-notebook timeout in seconds (default: from config)
+    - `--verbose` - enable verbose output with per-notebook details
 
   ## Exit codes
 
-    - `0` — all notebooks passed
-    - `1` — one or more notebooks failed (or preflight check failed)
-    - `2` — no notebooks discovered
+    - `0` - all notebooks passed
+    - `1` - one or more notebooks failed (or preflight check failed)
+    - `2` - no notebooks discovered
 
   ## Preflight checks
 

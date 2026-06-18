@@ -93,7 +93,7 @@ defmodule LivebookTest.Report do
     Enum.join(
       [
         "",
-        "0 notebooks found — nothing to test.",
+        "0 notebooks found - nothing to test.",
         "Check your paths and exclude patterns.",
         ""
       ],

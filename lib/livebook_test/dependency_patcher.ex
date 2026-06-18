@@ -23,8 +23,8 @@ defmodule LivebookTest.DependencyPatcher do
 
   ## Modes
 
-  - **Remote** (`:remote`) — leave the script untouched
-  - **Local** (`:local`) — rewrite Hex deps and existing `path:` deps to
+  - **Remote** (`:remote`) - leave the script untouched
+  - **Local** (`:local`) - rewrite Hex deps and existing `path:` deps to
     stable absolute paths from `local_deps`
 
   ## How patching works

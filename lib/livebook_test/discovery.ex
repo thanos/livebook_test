@@ -20,7 +20,7 @@ defmodule LivebookTest.Discovery do
   ## Exclusion
 
   The `exclude` option filters out notebooks that should not be
-  run by default — for example, intentionally broken notebooks
+  run by default. For example, intentionally broken notebooks
   kept as test fixtures:
 
       LivebookTest.Discovery.find(["examples/**/*.livemd"],

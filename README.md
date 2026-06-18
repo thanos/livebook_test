@@ -40,7 +40,7 @@ mix deps.get
 
 ## Supported Versions
 
-Install `livebook_test` in your Mix project as shown above — that is the supported workflow. You do not need to add `livebook` to your `deps` yourself; it is pulled in transitively so notebooks can be exported.
+Install `livebook_test` in your Mix project as shown above. That is the supported workflow. You do not need to add `livebook` to your `deps` yourself; it is pulled in transitively so notebooks can be exported.
 
 | Component | Supported |
 |-----------|-----------|
@@ -50,7 +50,7 @@ Install `livebook_test` in your Mix project as shown above — that is the suppo
 
 On the tested combinations above, `mix deps.get && mix compile` should succeed. `mix livebook.test` also runs preflight checks and reports actionable errors when something is unsupported.
 
-**Caveat:** Livebook's upstream docs describe their Hex package primarily as a CLI, not as a library dependency. `livebook_test` relies on that package anyway, and compilation can fail on untested Elixir/OTP pairs or in projects with conflicting deps. If that happens, see [Troubleshooting](#troubleshooting) — not a reason to avoid installing `livebook_test`.
+**Caveat:** Livebook's upstream docs describe their Hex package primarily as a CLI, not as a library dependency. `livebook_test` relies on that package anyway, and compilation can fail on untested Elixir/OTP pairs or in projects with conflicting deps. If that happens, see [Troubleshooting](#troubleshooting). This is not a reason to avoid installing `livebook_test`.
 
 ## Quick Start
 
@@ -104,7 +104,7 @@ config :livebook_test,
 
 ## Local Dependency Testing
 
-The killer feature: notebooks that use `Mix.install` can be automatically patched to use your local checkout.
+A core feature: notebooks that use `Mix.install` can be automatically patched to use your local checkout.
 
 ### Problem
 
@@ -250,7 +250,7 @@ Notebooks with Kino widgets, smart cells, or user inputs often fail when exporte
 ** (Mix) Could not compile dependency :livebook
 ```
 
-This means the **transitive** `:livebook` dependency (brought in by `livebook_test`) failed to compile — not that you installed something incorrectly. Livebook pulls in Phoenix, Bandit, and other heavy deps, which can conflict with your project or break on untested Elixir/OTP pairs.
+This means the **transitive** `:livebook` dependency (brought in by `livebook_test`) failed to compile. That does not mean you installed something incorrectly. Livebook pulls in Phoenix, Bandit, and other heavy deps, which can conflict with your project or break on untested Elixir/OTP pairs.
 
 1. Verify you are on Elixir 1.18+ and OTP 26/27/28
 2. Run `mix deps.get && mix compile` and inspect the Livebook error

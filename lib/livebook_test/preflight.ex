@@ -182,7 +182,7 @@ defmodule LivebookTest.Preflight do
     must compile that dependency before running notebook tests.
 
     Livebook upstream documents their Hex package primarily as a CLI. Using it
-    as a library dependency — as livebook_test does — can fail on some Elixir/OTP
+    as a library dependency (as livebook_test does) can fail on some Elixir/OTP
     combinations or in projects with conflicting deps.
     """
   end

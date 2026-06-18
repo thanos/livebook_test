@@ -19,6 +19,7 @@ config :livebook_test,
   paths: ["livebooks/**/*.livemd", "examples/**/*.livemd"],
   exclude: ["**/broken/**/*.livemd"],
   dependency_mode: :remote,
-  timeout: 60_000
+  timeout: 60_000,
+  local_deps: [jason: "."]
 
 import_config "#{config_env()}.exs"
