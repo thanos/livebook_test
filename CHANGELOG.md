@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `run/1` and `run_and_report/1` now honor `:runner` and `:preflight` options
 - Removed dead `Config.from_cli/1` CLI parsing duplicate
-- CI local-mode job runs `livebooks/local_dep.livemd` with `local_deps: [jason: "."]`
+- CI local-mode job runs `livebooks/local_dep.livemd` with `local_deps: [jason: "deps/jason"]`
 - Discovery exclude behavior documented in tests (exact path identity after wildcard expansion)
 - Verbose patch-write failure test uses injectable `:patch_writer` instead of filesystem permissions
 

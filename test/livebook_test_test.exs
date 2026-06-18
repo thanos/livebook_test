@@ -25,7 +25,7 @@ defmodule LivebookTestTest do
 
   describe "run/1 with local mode" do
     test "rewrites notebook Mix.install deps to local paths" do
-      abs_path = Path.expand(".")
+      abs_path = Path.expand("deps/jason")
 
       mock_result = %Runner{
         notebook_path: "livebooks/local_dep.livemd",
@@ -56,7 +56,7 @@ defmodule LivebookTestTest do
         Config.resolve(
           paths: ["livebooks/local_dep.livemd"],
           dependency_mode: :local,
-          local_deps: [jason: "."]
+          local_deps: [jason: "deps/jason"]
         )
 
       report = LivebookTest.run_with_config(config, runner: LivebookTest.MockRunner)

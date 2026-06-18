@@ -20,6 +20,6 @@ config :livebook_test,
   exclude: ["**/broken/**/*.livemd"],
   dependency_mode: :remote,
   timeout: 60_000,
-  local_deps: [jason: "."]
+  local_deps: [jason: "deps/jason"]
 
 import_config "#{config_env()}.exs"
