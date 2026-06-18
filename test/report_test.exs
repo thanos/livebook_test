@@ -13,7 +13,8 @@ defmodule LivebookTest.ReportTest do
       stdout: "",
       stderr: "",
       duration_ms: 100,
-      timed_out: false
+      timed_out: false,
+      harness_error: false
     ]
 
     struct!(Runner, Keyword.merge(defaults, attrs))
@@ -127,6 +128,31 @@ defmodule LivebookTest.ReportTest do
       output = Report.format(report)
       assert String.contains?(output, "fail.livemd")
       assert String.contains?(output, "exit: 1")
+    end
+
+    test "includes harness error details separately from exit status" do
+      report = %Report{
+        total: 1,
+        passed: 0,
+        failed: 1,
+        duration_ms: 0,
+        results: [],
+        failed_notebooks: [
+          make_result(
+            notebook_path: "broken.livemd",
+            exit_status: 1,
+            stderr: "{:execution_failed, \"boom\"}",
+            harness_error: true,
+            script_path: ""
+          )
+        ],
+        empty: false
+      }
+
+      output = Report.format(report)
+      assert output =~ "harness error:"
+      assert output =~ "broken.livemd"
+      refute output =~ "exit: 1"
     end
   end
 

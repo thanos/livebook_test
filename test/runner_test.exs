@@ -94,12 +94,13 @@ defmodule LivebookTest.RunnerTest do
       assert result.notebook_path == "my_notebook.livemd"
     end
 
-    test "handles error results from run/2 preserving notebook path" do
+    test "handles non-zero exit from missing scripts without harness_error" do
       pairs = [{"missing.livemd", "/nonexistent/script.exs"}]
       [result] = Runner.run_all(pairs, timeout: 30_000)
 
       assert result.notebook_path == "missing.livemd"
       assert result.exit_status != 0
+      refute result.harness_error
     end
   end
 
@@ -112,7 +113,8 @@ defmodule LivebookTest.RunnerTest do
         stdout: "",
         stderr: "",
         duration_ms: 100,
-        timed_out: false
+        timed_out: false,
+        harness_error: false
       }
 
       assert Runner.success?(result) == true
@@ -126,7 +128,8 @@ defmodule LivebookTest.RunnerTest do
         stdout: "",
         stderr: "error",
         duration_ms: 100,
-        timed_out: false
+        timed_out: false,
+        harness_error: false
       }
 
       assert Runner.success?(result) == false
@@ -140,7 +143,8 @@ defmodule LivebookTest.RunnerTest do
         stdout: "",
         stderr: "",
         duration_ms: 100,
-        timed_out: true
+        timed_out: true,
+        harness_error: false
       }
 
       assert Runner.success?(result) == false

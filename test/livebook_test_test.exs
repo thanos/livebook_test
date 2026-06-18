@@ -34,7 +34,8 @@ defmodule LivebookTestTest do
         stdout: "",
         stderr: "",
         duration_ms: 50,
-        timed_out: false
+        timed_out: false,
+        harness_error: false
       }
 
       LivebookTest.MockRunner
@@ -103,7 +104,8 @@ defmodule LivebookTestTest do
         stdout: "ok",
         stderr: "",
         duration_ms: 50,
-        timed_out: false
+        timed_out: false,
+        harness_error: false
       }
 
       LivebookTest.MockRunner
@@ -124,7 +126,8 @@ defmodule LivebookTestTest do
         stdout: "",
         stderr: "boom",
         duration_ms: 100,
-        timed_out: false
+        timed_out: false,
+        harness_error: false
       }
 
       LivebookTest.MockRunner
@@ -145,7 +148,8 @@ defmodule LivebookTestTest do
         stdout: "ok",
         stderr: "",
         duration_ms: 50,
-        timed_out: false
+        timed_out: false,
+        harness_error: false
       }
 
       LivebookTest.MockRunner

@@ -27,7 +27,7 @@ Add to your Mix project:
 ```elixir
 def deps do
   [
-    {:livebook_test, "~> 0.1.0", only: [:dev, :test], runtime: false}
+    {:livebook_test, "~> 0.1", only: [:dev, :test], runtime: false}
   ]
 end
 ```
@@ -205,7 +205,7 @@ Notebooks flow through a pipeline:
 0 failed
 Total time: 2.1s
 
-All notebooks passed! ✅
+All notebooks passed!
 ```
 
 With failures:

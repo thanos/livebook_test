@@ -43,8 +43,8 @@ defmodule LivebookTest.Report do
   ## Examples
 
       iex> results = [
-      ...>   %LivebookTest.Runner{notebook_path: "a.livemd", script_path: "a.exs", exit_status: 0, stdout: "", stderr: "", duration_ms: 100, timed_out: false},
-      ...>   %LivebookTest.Runner{notebook_path: "b.livemd", script_path: "b.exs", exit_status: 1, stdout: "", stderr: "oops", duration_ms: 200, timed_out: false}
+      ...>   %LivebookTest.Runner{notebook_path: "a.livemd", script_path: "a.exs", exit_status: 0, stdout: "", stderr: "", duration_ms: 100, timed_out: false, harness_error: false},
+      ...>   %LivebookTest.Runner{notebook_path: "b.livemd", script_path: "b.exs", exit_status: 1, stdout: "", stderr: "oops", duration_ms: 200, timed_out: false, harness_error: false}
       ...> ]
       iex> report = LivebookTest.Report.build(results)
       iex> report.total
@@ -83,7 +83,7 @@ defmodule LivebookTest.Report do
 
   ## Examples
 
-      iex> report = %LivebookTest.Report{total: 2, passed: 1, failed: 1, duration_ms: 300, results: [], failed_notebooks: [%LivebookTest.Runner{notebook_path: "b.livemd", script_path: "b.exs", exit_status: 1, stdout: "", stderr: "oops", duration_ms: 200, timed_out: false}], empty: false}
+      iex> report = %LivebookTest.Report{total: 2, passed: 1, failed: 1, duration_ms: 300, results: [], failed_notebooks: [%LivebookTest.Runner{notebook_path: "b.livemd", script_path: "b.exs", exit_status: 1, stdout: "", stderr: "oops", duration_ms: 200, timed_out: false, harness_error: false}], empty: false}
       iex> output = LivebookTest.Report.format(report)
       iex> String.contains?(output, "2 notebooks")
       true
@@ -115,7 +115,7 @@ defmodule LivebookTest.Report do
     Enum.join(lines, "\n")
   end
 
-  defp format_result_suffix(%__MODULE__{failed: 0}), do: ["All notebooks passed! ✅"]
+  defp format_result_suffix(%__MODULE__{failed: 0}), do: ["All notebooks passed!"]
 
   defp format_result_suffix(%__MODULE__{failed_notebooks: failed_notebooks}) do
     format_failures(failed_notebooks)
@@ -155,7 +155,7 @@ defmodule LivebookTest.Report do
 
   ## Examples
 
-      iex> results = [%LivebookTest.Runner{notebook_path: "a.livemd", script_path: "a.exs", exit_status: 0, stdout: "hello", stderr: "", duration_ms: 50, timed_out: false}]
+      iex> results = [%LivebookTest.Runner{notebook_path: "a.livemd", script_path: "a.exs", exit_status: 0, stdout: "hello", stderr: "", duration_ms: 50, timed_out: false, harness_error: false}]
       iex> report = LivebookTest.Report.build(results)
       iex> output = LivebookTest.Report.format_verbose(report)
       iex> String.contains?(output, "a.livemd")
@@ -205,17 +205,31 @@ defmodule LivebookTest.Report do
       "Failed notebooks:",
       String.duplicate("-", 20)
       | Enum.flat_map(failed_notebooks, fn result ->
-          [
-            "",
-            "  #{result.notebook_path}",
-            "  exit: #{result.exit_status}"
-          ] ++
-            if(result.stderr != "",
-              do: ["  stderr:", indent(result.stderr, 4)],
-              else: []
-            )
+          failure_lines(result)
         end)
     ]
+  end
+
+  defp failure_lines(%LivebookTest.Runner{harness_error: true} = result) do
+    [
+      "",
+      "  #{result.notebook_path}",
+      "  harness error:"
+    ] ++ stderr_lines(result)
+  end
+
+  defp failure_lines(result) do
+    [
+      "",
+      "  #{result.notebook_path}",
+      "  exit: #{result.exit_status}"
+    ] ++ stderr_lines(result)
+  end
+
+  defp stderr_lines(result) do
+    if result.stderr != "",
+      do: ["  stderr:", indent(result.stderr, 4)],
+      else: []
   end
 
   defp format_duration(ms) when ms < 1000, do: "#{ms}ms"
