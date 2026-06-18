@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `DependencyPatcher` now expands local paths to absolute paths for stable CI execution
 - Export failures include troubleshooting hints when Livebook is unavailable or incompatible
 - `mix livebook.test` runs preflight checks before notebook discovery
+- `LivebookTest.Runner` results include `harness_error` to distinguish runner failures from notebook exit codes
+- Doctests wired up across public modules; local-mode patching verified end-to-end in tests and CI
+- Documentation and output tone cleaned up (install pin, ExDoc wording, plain-ASCII punctuation, no emoji in reports)
+
+### Fixed
+
+- `run/1` and `run_and_report/1` now honor `:runner` and `:preflight` options
+- Removed dead `Config.from_cli/1` CLI parsing duplicate
+- CI local-mode job runs `livebooks/local_dep.livemd` with `local_deps: [jason: "."]`
 
 ## [0.1.0] - 2026-06-08
 

@@ -236,6 +236,12 @@ defmodule LivebookTestTest do
       File.write!(path, "# noop\n")
       on_exit(fn -> File.rm(path) end)
 
+      Application.put_env(:livebook_test, :patch_writer, fn _path, _content ->
+        {:error, :eacces}
+      end)
+
+      on_exit(fn -> Application.delete_env(:livebook_test, :patch_writer) end)
+
       LivebookTest.MockRunner
       |> Mox.expect(:run_all, fn pairs, _opts ->
         assert length(pairs) == 1

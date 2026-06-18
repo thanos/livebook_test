@@ -68,6 +68,21 @@ defmodule LivebookTest.DiscoveryTest do
 
       assert paths == all_paths
     end
+
+    test "exclude matches expanded paths by exact string identity" do
+      all = Discovery.find(["examples/**/*.livemd"])
+      assert length(all) > 0
+
+      # Equivalent globs expand to the same path strings on all platforms checked in CI.
+      with_dot_prefix =
+        Discovery.find(["examples/**/*.livemd"], exclude: ["./examples/**/*.livemd"])
+
+      assert with_dot_prefix == []
+
+      # A non-matching exclude pattern expands to nothing and leaves discovery unchanged.
+      with_typo = Discovery.find(["examples/**/*.livemd"], exclude: ["examples/**/basix.livemd"])
+      assert with_typo == all
+    end
   end
 
   describe "count/1" do

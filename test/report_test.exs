@@ -151,6 +151,7 @@ defmodule LivebookTest.ReportTest do
 
       output = Report.format(report)
       assert output =~ "harness error:"
+      assert output =~ "{:execution_failed, \"boom\"}"
       assert output =~ "broken.livemd"
       refute output =~ "exit: 1"
     end

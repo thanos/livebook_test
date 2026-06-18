@@ -174,7 +174,7 @@ defmodule LivebookTest do
         patched =
           LivebookTest.DependencyPatcher.patch(script_content, :local, config.local_deps)
 
-        case File.write(script_path, patched) do
+        case write_patched_script(script_path, patched) do
           :ok ->
             {notebook_path, script_path}
 
@@ -201,6 +201,11 @@ defmodule LivebookTest do
 
   defp exporter_module do
     Application.get_env(:livebook_test, :exporter_module, LivebookTest.Exporter)
+  end
+
+  defp write_patched_script(script_path, patched) do
+    writer = Application.get_env(:livebook_test, :patch_writer, &File.write/2)
+    writer.(script_path, patched)
   end
 
   @doc """

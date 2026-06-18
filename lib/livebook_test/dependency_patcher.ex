@@ -32,16 +32,16 @@ defmodule LivebookTest.DependencyPatcher do
   The patcher operates on the **exported Elixir script** (not the `.livemd`),
   using regex-based replacement to rewrite `Mix.install` calls:
 
-      # Hex dep — before (remote)
+      # Hex dep - before (remote)
       Mix.install([{:my_lib, "~> 0.5"}])
 
-      # Hex dep — after (local)
+      # Hex dep - after (local)
       Mix.install([{:my_lib, path: "/abs/path/to/project"}])
 
-      # Path dep — before
+      # Path dep - before
       Mix.install([{:my_lib, path: Path.join(__DIR__, "..")}])
 
-      # Path dep — after (local, when my_lib is in local_deps)
+      # Path dep - after (local, when my_lib is in local_deps)
       Mix.install([{:my_lib, path: "/abs/path/to/project"}])
   """
 
