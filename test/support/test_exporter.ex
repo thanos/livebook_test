@@ -10,7 +10,9 @@ defmodule LivebookTest.TestExporter do
         {:ok, Path.join(System.tmp_dir!(), "missing_#{:erlang.unique_integer([:positive])}.exs")}
 
       "fail_write.livemd" ->
-        path = Path.join(System.tmp_dir!(), "patch_target_#{:erlang.unique_integer([:positive])}.exs")
+        path =
+          Path.join(System.tmp_dir!(), "patch_target_#{:erlang.unique_integer([:positive])}.exs")
+
         File.write!(path, "Mix.install([{:my_lib, \"~> 0.1\"}])\n")
         {:ok, path}
 
