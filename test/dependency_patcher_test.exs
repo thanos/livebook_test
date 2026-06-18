@@ -3,6 +3,8 @@ defmodule LivebookTest.DependencyPatcherTest do
 
   alias LivebookTest.DependencyPatcher
 
+  doctest DependencyPatcher
+
   describe "patch/3 with :remote mode" do
     test "returns script unchanged" do
       script = "Mix.install([{:ex_arrow, \"~> 0.5\"}])"

@@ -40,17 +40,17 @@ mix deps.get
 
 ## Supported Versions
 
-`livebook_test` depends on compiling Livebook as a Mix dependency. This works on tested combinations but can be fragile on others.
+Install `livebook_test` in your Mix project as shown above — that is the supported workflow. You do not need to add `livebook` to your `deps` yourself; it is pulled in transitively so notebooks can be exported.
 
 | Component | Supported |
 |-----------|-----------|
 | Elixir | `~> 1.18` (1.18.0 and later) |
 | OTP | 26, 27, 28 |
-| Livebook | `~> 0.19.0` |
+| Livebook (transitive) | `~> 0.19.0` |
 
-`mix livebook.test` runs preflight checks and reports actionable errors when versions are unsupported or Livebook is unavailable.
+On the tested combinations above, `mix deps.get && mix compile` should succeed. `mix livebook.test` also runs preflight checks and reports actionable errors when something is unsupported.
 
-Livebook is officially distributed as a CLI tool and is not fully supported as a Mix dependency. If Livebook fails to compile in your project, see [Troubleshooting](#troubleshooting) and [Kino limitations](docs/guides/kino_limitations.md).
+**Caveat:** Livebook's upstream docs describe their Hex package primarily as a CLI, not as a library dependency. `livebook_test` relies on that package anyway, and compilation can fail on untested Elixir/OTP pairs or in projects with conflicting deps. If that happens, see [Troubleshooting](#troubleshooting) — not a reason to avoid installing `livebook_test`.
 
 ## Quick Start
 
@@ -250,11 +250,11 @@ Notebooks with Kino widgets, smart cells, or user inputs often fail when exporte
 ** (Mix) Could not compile dependency :livebook
 ```
 
-Livebook pulls in Phoenix, Bandit, and other heavy dependencies. Compilation failures are common on untested Elixir/OTP pairs.
+This means the **transitive** `:livebook` dependency (brought in by `livebook_test`) failed to compile — not that you installed something incorrectly. Livebook pulls in Phoenix, Bandit, and other heavy deps, which can conflict with your project or break on untested Elixir/OTP pairs.
 
 1. Verify you are on Elixir 1.18+ and OTP 26/27/28
 2. Run `mix deps.get && mix compile` and inspect the Livebook error
-3. Pin `{:livebook, "~> 0.19.0", runtime: false}` explicitly
+3. If another dep pulls a conflicting Livebook version, override with `{:livebook, "~> 0.19.0", override: true}` in your `deps`
 4. Check for conflicting Phoenix or Bandit versions in your project
 
 ### Preflight check failures

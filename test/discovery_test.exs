@@ -3,6 +3,8 @@ defmodule LivebookTest.DiscoveryTest do
 
   alias LivebookTest.Discovery
 
+  doctest Discovery
+
   describe "find/1" do
     test "finds notebooks matching glob patterns" do
       paths = Discovery.find(["examples/**/*.livemd"])

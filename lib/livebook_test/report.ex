@@ -83,7 +83,7 @@ defmodule LivebookTest.Report do
 
   ## Examples
 
-      iex> report = %LivebookTest.Report{total: 2, passed: 1, failed: 1, duration_ms: 300, results: [], failed_notebooks: [%LivebookTest.Runner{notebook_path: "b.livemd", script_path: "b.exs", exit_status: 1, stdout: "", stderr: "oops", duration_ms: 200, timed_out: false}]}
+      iex> report = %LivebookTest.Report{total: 2, passed: 1, failed: 1, duration_ms: 300, results: [], failed_notebooks: [%LivebookTest.Runner{notebook_path: "b.livemd", script_path: "b.exs", exit_status: 1, stdout: "", stderr: "oops", duration_ms: 200, timed_out: false}], empty: false}
       iex> output = LivebookTest.Report.format(report)
       iex> String.contains?(output, "2 notebooks")
       true

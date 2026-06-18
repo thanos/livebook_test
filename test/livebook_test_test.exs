@@ -5,6 +5,8 @@ defmodule LivebookTestTest do
 
   alias LivebookTest.{Config, Report, Runner}
 
+  doctest LivebookTest, only: [run_with_config: 2]
+
   setup :verify_on_exit!
 
   describe "run/1" do
@@ -22,16 +24,60 @@ defmodule LivebookTestTest do
   end
 
   describe "run/1 with local mode" do
-    test "patches dependencies in local mode" do
-      {config, report} =
-        LivebookTest.run(
+    test "rewrites notebook Mix.install deps to local paths" do
+      abs_path = Path.expand(".")
+
+      mock_result = %Runner{
+        notebook_path: "livebooks/local_dep.livemd",
+        script_path: "patched.exs",
+        exit_status: 0,
+        stdout: "",
+        stderr: "",
+        duration_ms: 50,
+        timed_out: false
+      }
+
+      LivebookTest.MockRunner
+      |> Mox.expect(:run_all, fn pairs, _opts ->
+        assert length(pairs) == 1
+
+        {notebook_path, script_path} = hd(pairs)
+        assert notebook_path == "livebooks/local_dep.livemd"
+
+        content = File.read!(script_path)
+        assert content =~ "{:jason, path: #{inspect(abs_path)}}"
+        refute content =~ "~> 1.4"
+
+        [mock_result]
+      end)
+
+      config =
+        Config.resolve(
           paths: ["livebooks/local_dep.livemd"],
-          mode: :local,
-          local_deps: [livebook_test: "."]
+          dependency_mode: :local,
+          local_deps: [jason: "."]
         )
 
-      assert config.dependency_mode == :local
-      assert is_struct(report, Report)
+      report = LivebookTest.run_with_config(config, runner: LivebookTest.MockRunner)
+
+      assert report.passed == 1
+      assert report.failed == 0
+    end
+  end
+
+  describe "run/1 options" do
+    test "passes runner and preflight through run/1" do
+      LivebookTest.MockRunner
+      |> Mox.expect(:run_all, fn _pairs, _opts -> [] end)
+
+      {_config, report} =
+        LivebookTest.run(
+          paths: ["nonexistent/**/*.livemd"],
+          runner: LivebookTest.MockRunner,
+          preflight: false
+        )
+
+      assert report.empty == true
     end
   end
 
@@ -217,10 +263,7 @@ defmodule LivebookTestTest do
       output =
         ExUnit.CaptureIO.capture_io(fn ->
           result =
-            LivebookTest.run_and_report(
-              paths: ["examples/basic.livemd"],
-              runner: LivebookTest.Runner
-            )
+            LivebookTest.run_and_report(paths: ["examples/basic.livemd"])
 
           assert result == 0
         end)
@@ -232,6 +275,25 @@ defmodule LivebookTestTest do
       output =
         ExUnit.CaptureIO.capture_io(fn ->
           result = LivebookTest.run_and_report(paths: ["nonexistent/**/*.livemd"])
+          assert result == 2
+        end)
+
+      assert output =~ "0 notebooks found"
+    end
+
+    test "passes runner through run_and_report/1" do
+      LivebookTest.MockRunner
+      |> Mox.expect(:run_all, fn _pairs, _opts -> [] end)
+
+      output =
+        ExUnit.CaptureIO.capture_io(fn ->
+          result =
+            LivebookTest.run_and_report(
+              paths: ["nonexistent/**/*.livemd"],
+              runner: LivebookTest.MockRunner,
+              preflight: false
+            )
+
           assert result == 2
         end)
 

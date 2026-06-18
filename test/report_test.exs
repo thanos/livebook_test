@@ -3,6 +3,8 @@ defmodule LivebookTest.ReportTest do
 
   alias LivebookTest.{Report, Runner}
 
+  doctest Report
+
   defp make_result(attrs \\ []) do
     defaults = [
       notebook_path: "test.livemd",

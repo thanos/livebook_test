@@ -74,19 +74,6 @@ defmodule LivebookTest.Config do
     }
   end
 
-  @doc false
-  @spec from_cli(keyword()) :: t()
-  def from_cli(cli_opts) do
-    overrides =
-      []
-      |> maybe_put_paths(cli_opts)
-      |> maybe_put_mode(cli_opts)
-      |> maybe_put_timeout(cli_opts)
-      |> maybe_put_verbose(cli_opts)
-
-    resolve(overrides)
-  end
-
   defp resolve_paths(overrides) do
     Keyword.get(overrides, :paths, app_env(:paths, @default_paths))
   end
@@ -113,42 +100,5 @@ defmodule LivebookTest.Config do
 
   defp app_env(key, default) do
     Application.get_env(:livebook_test, key, default)
-  end
-
-  defp maybe_put_paths(acc, cli_opts) do
-    case Keyword.get_values(cli_opts, :path) do
-      [] -> acc
-      paths -> Keyword.put(acc, :paths, paths)
-    end
-  end
-
-  defp maybe_put_mode(acc, cli_opts) do
-    case Keyword.get(cli_opts, :mode) do
-      nil -> acc
-      "local" -> Keyword.put(acc, :dependency_mode, :local)
-      "remote" -> Keyword.put(acc, :dependency_mode, :remote)
-      mode when is_atom(mode) -> Keyword.put(acc, :dependency_mode, mode)
-    end
-  end
-
-  defp maybe_put_timeout(acc, cli_opts) do
-    case Keyword.get(cli_opts, :timeout) do
-      nil ->
-        acc
-
-      timeout when is_binary(timeout) ->
-        Keyword.put(acc, :timeout, String.to_integer(timeout) * 1000)
-
-      timeout when is_integer(timeout) ->
-        Keyword.put(acc, :timeout, timeout)
-    end
-  end
-
-  defp maybe_put_verbose(acc, cli_opts) do
-    case Keyword.get(cli_opts, :verbose) do
-      nil -> acc
-      true -> Keyword.put(acc, :verbose, true)
-      false -> Keyword.put(acc, :verbose, false)
-    end
   end
 end

@@ -3,6 +3,8 @@ defmodule LivebookTest.RunnerTest do
 
   alias LivebookTest.Runner
 
+  doctest Runner, except: [run: 2]
+
   describe "run/2" do
     test "executes a simple script successfully" do
       script_path =

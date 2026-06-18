@@ -60,11 +60,11 @@ defmodule LivebookTest.DependencyPatcher do
 
   ## Examples
 
-      iex> script = "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
+      iex> script = ~S|Mix.install([{:ex_arrow, "~> 0.5"}])|
       iex> LivebookTest.DependencyPatcher.patch(script, :remote, [])
-      "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
+      ~S|Mix.install([{:ex_arrow, "~> 0.5"}])|
 
-      iex> script = "Mix.install([{:ex_arrow, \"~> 0.5\"}])"
+      iex> script = ~S|Mix.install([{:ex_arrow, "~> 0.5"}])|
       iex> patched = LivebookTest.DependencyPatcher.patch(script, :local, ex_arrow: ".")
       iex> String.contains?(patched, "path:")
       true
